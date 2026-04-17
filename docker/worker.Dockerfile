@@ -27,7 +27,6 @@ RUN pip install --no-cache-dir --upgrade pip setuptools==69.5.1 wheel && \
 # Copy source code
 COPY backend/ ./backend/
 COPY processing_engine/ ./processing_engine/
-COPY broken-463023-9245abcbef13.json ./
 
 # Create necessary directories
 RUN mkdir -p /app/logs /app/media /app/temp /app/event_analysis /root/.EasyOCR/model
