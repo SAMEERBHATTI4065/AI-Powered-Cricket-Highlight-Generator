@@ -1,0 +1,82 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+/media
+/staticfiles
+
+# Environment variables - NEVER commit these!
+.env
+.env.local
+
+# Google Cloud credentials - SENSITIVE!
+*.json
+!package.json
+!package-lock.json
+!tsconfig*.json
+!components.json
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+/logs/
+/temp/
+/event_analysis/*.json
+!/event_analysis/.gitkeep
+
+# Docker
+*.pid
+*.seed
+*.pid.lock
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Node.js (frontend)
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Large media files
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm

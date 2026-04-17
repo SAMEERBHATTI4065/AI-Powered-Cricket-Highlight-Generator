@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Python Virtual Environment
+venv/
+.venv/
+env/
+**/venv/
+**/.venv/
+**/env/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Media and Data (Bhari files jo Docker Hub par nahi bhejni)
+media/
+backend/media/
+postgres_data/
+logs/
+*.log
+temp/
+results/
+event_analysis/
+uploads/
+*.mp4
+*.avi
+*.mkv
+
+# OS related
+.DS_Store
+Thumbs.db
+
+# Node.js
+node_modules/
+**/node_modules/
+frontend/node_modules/
+dist/
+.npm/
+
+# Project Zips and Backups
+*.zip
+*.tar.gz
+backup.sql
+
+# Docker related
+# docker/  <-- REMOVED: We need scripts from inside the docker folder
+*.log
+docker/*.log
+docker/*_logs.txt
+docker/*_output.txt
+.docker-compose.yml.swp
