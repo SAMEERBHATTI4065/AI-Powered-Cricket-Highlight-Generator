@@ -16,19 +16,19 @@ from datetime import datetime
 
 # Configure logging
 logging.basicConfig(
-    filename='processing.log',
+    filename="processing.log",
     level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    encoding='utf-8'
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    encoding="utf-8",
 )
 
 # Suppress noisy library logs
-logging.getLogger('easyocr').setLevel(logging.ERROR)
+logging.getLogger("easyocr").setLevel(logging.ERROR)
 
 # Fix encoding for Windows console
-if hasattr(sys.stdout, 'buffer'):
+if hasattr(sys.stdout, "buffer"):
     try:
-        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+        sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
     except (AttributeError, io.UnsupportedOperation):
         pass
 
@@ -44,24 +44,38 @@ except ImportError:
 # EasyOCR Reader (global, initialize once)
 reader = None
 
+
 def _log(msg, level="INFO", indent=0):
     ts = datetime.now().strftime("%H:%M:%S")
     prefix = "  " * indent
     icons = {
-        "INFO": "📌", "STEP": "▶️ ", "OK": "✅", "WARN": "⚠️ ", "ERR": "❌",
-        "DATA": "📊", "FILE": "📁", "READ": "📖", "OCR": "🔍", "CUT": "✂️ ",
-        "MERGE": "🔗", "AI": "🤖", "DONE": "🎉", "TIME": "⏱️ "
+        "INFO": "📌",
+        "STEP": "▶️ ",
+        "OK": "✅",
+        "WARN": "⚠️ ",
+        "ERR": "❌",
+        "DATA": "📊",
+        "FILE": "📁",
+        "READ": "📖",
+        "OCR": "🔍",
+        "CUT": "✂️ ",
+        "MERGE": "🔗",
+        "AI": "🤖",
+        "DONE": "🎉",
+        "TIME": "⏱️ ",
     }
     icon = icons.get(level, "📌")
     print(f"[{ts}] {icon} {prefix}{msg}", flush=True)
+
 
 def get_reader():
     global reader
     if reader is None:
         _log("Initializing EasyOCR...", "AI")
         import gc
-        gc.collect() # Force cleanup before loading heavy AI models
-        reader = easyocr.Reader(['en'], gpu=False)
+
+        gc.collect()  # Force cleanup before loading heavy AI models
+        reader = easyocr.Reader(["en"], gpu=False)
     return reader
 
 
@@ -71,20 +85,28 @@ def get_reader():
 # - Extra fallback parsing layer (finds overs even without "P" token)
 # =============================================================================
 def clean_scoreboard_text(ocr_text):
-    text = ocr_text.replace("/", " ").replace("|", " ").replace(",", " ").replace("[", " ").replace("]", " ")
+    text = (
+        ocr_text.replace("/", " ")
+        .replace("|", " ")
+        .replace(",", " ")
+        .replace("[", " ")
+        .replace("]", " ")
+    )
     tokens = text.split()
 
     logging.debug(f"Cleaning text: {ocr_text} -> Tokens: {tokens}")
 
-    team        = None
-    score       = None
-    overs       = None
+    team = None
+    score = None
+    overs = None
     total_overs = None
 
     # --- Team name ---
     # We look for all uppercase tokens and pick the one most likely to be the active team
     # (usually first or near the score)
-    candidate_teams = [t for t in tokens if t.isalpha() and t.isupper() and 2 <= len(t) <= 4]
+    candidate_teams = [
+        t for t in tokens if t.isalpha() and t.isupper() and 2 <= len(t) <= 4
+    ]
     if candidate_teams:
         team = candidate_teams[0]  # Default to first one
         # If there are multiple, and one is 'P' or other noise, we skip it
@@ -94,7 +116,7 @@ def clean_scoreboard_text(ocr_text):
                 break
 
     # --- Score (e.g. 123-4) ---
-    m = re.search(r'\d+\s*-\s*\d+', text)
+    m = re.search(r"\d+\s*-\s*\d+", text)
     if m:
         score = m.group().replace(" ", "")
 
@@ -104,14 +126,16 @@ def clean_scoreboard_text(ocr_text):
             nxt = tokens[i + 1]
 
             # Already has dot: "8.3"
-            if '.' in nxt and nxt.replace('.', '').isdigit():
+            if "." in nxt and nxt.replace(".", "").isdigit():
                 overs = nxt
                 if i + 2 < len(tokens) and tokens[i + 2].isdigit():
                     total_overs = tokens[i + 2]
 
             # No dot, 2+ digits: "83" → "8.3"
             elif nxt.isdigit() and len(nxt) >= 2:
-                overs = f"{nxt[:-1]}.{nxt[-1]}" if len(nxt) >= 3 else f"{nxt[0]}.{nxt[1]}"
+                overs = (
+                    f"{nxt[:-1]}.{nxt[-1]}" if len(nxt) >= 3 else f"{nxt[0]}.{nxt[1]}"
+                )
                 if i + 2 < len(tokens) and tokens[i + 2].isdigit():
                     total_overs = tokens[i + 2]
                 elif len(nxt) >= 4:
@@ -127,7 +151,7 @@ def clean_scoreboard_text(ocr_text):
     # --- Overs: Fallback 1 — explicit decimal like "7.5" ---
     if not overs:
         for i, t in enumerate(tokens):
-            if '.' in t and t.replace('.', '').isdigit():
+            if "." in t and t.replace(".", "").isdigit():
                 overs = t
                 if i + 1 < len(tokens) and tokens[i + 1] in ["20", "50", "100"]:
                     total_overs = tokens[i + 1]
@@ -136,7 +160,11 @@ def clean_scoreboard_text(ocr_text):
     # --- Overs: Fallback 2 — "75 20" where OCR missed the dot ---
     if not overs:
         for i, t in enumerate(tokens):
-            if t.isdigit() and i + 1 < len(tokens) and tokens[i + 1] in ["20", "50", "100"]:
+            if (
+                t.isdigit()
+                and i + 1 < len(tokens)
+                and tokens[i + 1] in ["20", "50", "100"]
+            ):
                 if len(t) == 1:
                     overs = f"{t}.0"
                 elif len(t) == 2:
@@ -154,8 +182,14 @@ def clean_scoreboard_text(ocr_text):
             match_result = text.strip()
             break
 
-    result = {"team": team, "score": score, "overs": overs, "total_overs": total_overs, "match_result": match_result}
-    
+    result = {
+        "team": team,
+        "score": score,
+        "overs": overs,
+        "total_overs": total_overs,
+        "match_result": match_result,
+    }
+
     if team and score and overs and total_overs:
         result["formatted"] = f"{team} {score} P {overs}/{total_overs}"
     elif team and score:
@@ -177,9 +211,9 @@ def get_score_from_image_ai(img_path, is_verified=False):
         return None
 
     img_res = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_LINEAR)
-    results  = ocr_reader.readtext(img_res)
-    full_text   = " ".join([text for (_, text, _) in results])
-    confidence  = np.mean([c for (_, _, c) in results]) if results else 0.0
+    results = ocr_reader.readtext(img_res)
+    full_text = " ".join([text for (_, text, _) in results])
+    confidence = np.mean([c for (_, _, c) in results]) if results else 0.0
 
     clean_text = None
     if is_verified:
@@ -191,29 +225,142 @@ def get_score_from_image_ai(img_path, is_verified=False):
         logging.debug(f"[AI RAW DATA]: {full_text}")
 
     # Robust regex for score-wicket pair
-    match = re.search(r'(\d+)\s*[\-\/\[\|]\s*(\d+)', full_text)
+    match = re.search(r"(\d+)\s*[\-\/\[\|]\s*(\d+)", full_text)
     if match:
         return {
-            "score":      int(match.group(1)),
-            "wicket":     int(match.group(2)),
-            "team":       clean_text.get("team") if isinstance(clean_text, dict) else None,
-            "match_result": clean_text.get("match_result") if isinstance(clean_text, dict) else None,
-            "clean_text": clean_text.get("formatted") if isinstance(clean_text, dict) else clean_text,
-            "confidence": confidence
+            "score": int(match.group(1)),
+            "wicket": int(match.group(2)),
+            "team": clean_text.get("team") if isinstance(clean_text, dict) else None,
+            "match_result": (
+                clean_text.get("match_result") if isinstance(clean_text, dict) else None
+            ),
+            "clean_text": (
+                clean_text.get("formatted")
+                if isinstance(clean_text, dict)
+                else clean_text
+            ),
+            "confidence": confidence,
         }
 
-    nums = re.findall(r'\d+', full_text)
+    nums = re.findall(r"\d+", full_text)
     if nums:
         return {
-            "score":      int(nums[0]),
-            "wicket":     None,
-            "team":       clean_text.get("team") if isinstance(clean_text, dict) else None,
-            "match_result": clean_text.get("match_result") if isinstance(clean_text, dict) else None,
-            "clean_text": clean_text.get("formatted") if isinstance(clean_text, dict) else clean_text,
-            "confidence": confidence * 0.7
+            "score": int(nums[0]),
+            "wicket": None,
+            "team": clean_text.get("team") if isinstance(clean_text, dict) else None,
+            "match_result": (
+                clean_text.get("match_result") if isinstance(clean_text, dict) else None
+            ),
+            "clean_text": (
+                clean_text.get("formatted")
+                if isinstance(clean_text, dict)
+                else clean_text
+            ),
+            "confidence": confidence * 0.7,
         }
 
     return None
+
+
+# =============================================================================
+# SMART VALIDATION: CRICKET CONTEXT CHECK
+# =============================================================================
+def validate_video_context(cap, duration, sample_points=[60, 90, 120, 180, 240, 300]):
+    """
+    Checks if the video actually contains a cricket scoreboard and if it's already a highlight.
+    Returns (is_valid, message)
+    """
+    _log("Phase 0: Smart Validation (Cricket Context Check)...", "STEP")
+
+    # 1. Duration check (Highlight detection)
+    if duration < 300:  # 5 minutes
+        _log(
+            "Video is too short (< 5 min). Likely already a highlight or clip.", "WARN"
+        )
+        return (
+            False,
+            "VALIDATION_FAILED: Please upload the cricket video. This clip is too short for highlight generation.",
+        )
+
+    # 2. Scoreboard Context & Highlight Jump Check
+    found_cricket_keywords = 0
+    cricket_keywords = [
+        "runs",
+        "wkts",
+        "overs",
+        "score",
+        "total",
+        "rr",
+        "crr",
+        "target",
+        "vs",
+    ]
+
+    first_overs = None
+    first_overs_ts = None
+
+    _log(
+        f"Deep scanning ({sample_points} seconds) for context and highlight detection...",
+        "OCR",
+    )
+
+    for ts in sample_points:
+        if ts > duration:
+            continue
+
+        tmp_img = "context_check.jpg"
+        if capture_scoreboard_full_width(cap, ts, tmp_img):
+            data = get_score_from_image_ai(tmp_img, is_verified=True)
+            if os.path.exists(tmp_img):
+                os.remove(tmp_img)
+
+            if data and data.get("clean_text"):
+                raw_text = str(data.get("clean_text", "")).lower()
+
+                # Check for keywords
+                for kw in cricket_keywords:
+                    if kw in raw_text:
+                        found_cricket_keywords += 1
+                        break
+
+                # Extract overs for highlight detection
+                m_over = re.search(r"(\d+\.\d+)", raw_text)
+                if m_over:
+                    current_overs = float(m_over.group(1))
+                    if first_overs is None:
+                        first_overs = current_overs
+                        first_overs_ts = ts
+                    else:
+                        # Highlight Detection: If overs jump more than 1.5 in a few minutes of video
+                        # In real cricket, 1 over takes ~4-5 mins. If it jumps in < 4 mins of video, it's a highlight.
+                        video_elapsed_mins = (ts - first_overs_ts) / 60
+                        overs_diff = current_overs - first_overs
+
+                        # Handle over roll-over (e.g. 5.5 to 6.0)
+                        if overs_diff > 1.0 and video_elapsed_mins < (overs_diff * 0.5):
+                            _log(
+                                f"HIGHLIGHT DETECTED: Overs jumped {overs_diff} in {video_elapsed_mins:.1f}m of video.",
+                                "WARN",
+                            )
+                            return (
+                                False,
+                                "VALIDATION_FAILED: Please upload the cricket video. This video appears to be already highlighted or edited.",
+                            )
+
+        if found_cricket_keywords >= 2:
+            _log(f"Cricket context verified at {ts}s.", "OK")
+            # We continue scanning a bit more to ensure it's not a highlight
+            if ts >= 120:
+                return True, "Success"
+
+    if found_cricket_keywords < 2:
+        _log("Could not find a cricket scoreboard in the deep scan.", "WARN")
+        return (
+            False,
+            "VALIDATION_FAILED: Please upload the cricket video. No scoreboard detected in the initial scan.",
+        )
+
+    return True, "Success"
 
 
 # =============================================================================
@@ -233,9 +380,9 @@ def capture_scoreboard_full_width(cap, timestamp, output_path):
     ret, frame = cap.read()
 
     if ret:
-        h, w    = frame.shape[:2]
-        roi_top = int(h * 0.90)          # bottom 10% — scoreboard strip
-        crop    = frame[roi_top:h, 0:w]
+        h, w = frame.shape[:2]
+        roi_top = int(h * 0.90)  # bottom 10% — scoreboard strip
+        crop = frame[roi_top:h, 0:w]
         cv2.imwrite(output_path, crop)
         return True
     return False
@@ -246,12 +393,12 @@ def capture_scoreboard_full_width(cap, timestamp, output_path):
 # =============================================================================
 def get_video_duration(video_path):
     try:
-        cmd    = f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{video_path}"'
+        cmd = f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{video_path}"'
         output = subprocess.check_output(cmd, shell=True).decode().strip()
         return float(output)
     except Exception:
-        cap    = cv2.VideoCapture(video_path)
-        fps    = cap.get(cv2.CAP_PROP_FPS)
+        cap = cv2.VideoCapture(video_path)
+        fps = cap.get(cv2.CAP_PROP_FPS)
         frames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
         cap.release()
         if fps > 0:
@@ -272,16 +419,16 @@ def detect_events(y, sr, min_gap_sec=35):
     _log("Audio analysis — Rolling 30-min adaptive threshold...", "DATA")
 
     energy = librosa.feature.rms(y=y)[0]
-    t      = librosa.frames_to_time(range(len(energy)), sr=sr)
+    t = librosa.frames_to_time(range(len(energy)), sr=sr)
 
     # Rolling window = 30 minutes worth of RMS frames
-    fps_rms     = sr / 512                       # default hop_length=512
-    window_size = int(fps_rms * 1800)            # 30 minutes
+    fps_rms = sr / 512  # default hop_length=512
+    window_size = int(fps_rms * 1800)  # 30 minutes
     if window_size < 1:
         window_size = 1
 
-    rolling_mean = np.convolve(energy, np.ones(window_size) / window_size, mode='same')
-    thresholds   = rolling_mean * 3.6            # same multiplier as original
+    rolling_mean = np.convolve(energy, np.ones(window_size) / window_size, mode="same")
+    thresholds = rolling_mean * 3.6  # same multiplier as original
 
     peaks = []
     for i in range(1, len(energy) - 1):
@@ -306,7 +453,9 @@ def detect_events(y, sr, min_gap_sec=35):
 # IMPROVEMENT 4: output_dir support
 # IMPROVEMENT 7: progress_callback support
 # =============================================================================
-def generate_highlights(videos=None, output_dir=None, progress_callback=None, max_process_minutes=None):
+def generate_highlights(
+    videos=None, output_dir=None, progress_callback=None, max_process_minutes=None
+):
     """
     max_process_minutes : int | float | None
         Kitne minutes tak video process karni hai.
@@ -316,7 +465,6 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
                  max_process_minutes=90  → 90 min tak
                  max_process_minutes=None → poori video
     """
-    # --- Step 0: progress start ---
     if progress_callback:
         progress_callback(10, "initialization", "Starting video processing...")
 
@@ -326,20 +474,20 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
         print("❌ CRITICAL ERROR: FFmpeg is not installed or not in PATH.")
         return {
             "success": False,
-            "error": "FFmpeg is missing. Please install FFmpeg to process videos."
+            "error": "FFmpeg is missing. Please install FFmpeg to process videos.",
         }
 
     # --- Resolve video path ---
     video_path = videos
     if video_path is None:
         video_folder = os.path.join("data", "videos")
-        video_files  = glob.glob(os.path.join(video_folder, "*.mp4"))
+        video_files = glob.glob(os.path.join(video_folder, "*.mp4"))
         if not video_files:
             print("❌ Video nahi mili!")
             return {"success": False, "error": "No video found."}
         video_path = video_files[0]
 
-    video_path  = os.path.abspath(video_path)
+    video_path = os.path.abspath(video_path)
     output_base = output_dir if output_dir else "event_analysis"
 
     # Fresh output folder
@@ -357,16 +505,31 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
 
     print(f"🎞️ Total Duration: {duration / 60:.2f} minutes")
 
+    # =========================================================================
+    # SMART VALIDATION: Check Context & Duration
+    # =========================================================================
+    temp_cap = cv2.VideoCapture(video_path)
+    is_valid, msg = validate_video_context(temp_cap, duration)
+    temp_cap.release()
+
+    if not is_valid:
+        print(f"❌ VALIDATION FAILED: {msg}")
+        return {"success": False, "error": msg}
+
     # --- Determine how much to process ---
     if max_process_minutes is None:
-        max_duration = duration          # poori video
+        max_duration = duration  # poori video
         print(f"📌 Processing FULL video ({duration/60:.2f} min).")
     else:
         max_duration = min(duration, max_process_minutes * 60)
-        print(f"📌 Processing limited to {max_process_minutes} minutes "
-              f"({max_duration/60:.2f} min of {duration/60:.2f} min total).")
+        print(
+            f"📌 Processing limited to {max_process_minutes} minutes "
+            f"({max_duration/60:.2f} min of {duration/60:.2f} min total)."
+        )
         if max_duration < duration:
-            print(f"⚠️  Remaining {(duration - max_duration)/60:.2f} min will be skipped.")
+            print(
+                f"⚠️  Remaining {(duration - max_duration)/60:.2f} min will be skipped."
+            )
 
     # --- Build 30-min chunks ---
     chunks = []
@@ -385,81 +548,93 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
     if not shared_cap.isOpened():
         return {"success": False, "error": f"Cannot open video: {video_path}"}
 
-    all_verified_events       = []
-    all_verified_clips_paths  = []
-    verified_score_transitions = set()   # (prev_score, curr_score, wicket_change)
-    last_clip_end_time         = -999.0  # end time of last verified clip
+    all_verified_events = []
+    all_verified_clips_paths = []
+    verified_score_transitions = set()  # (prev_score, curr_score, wicket_change)
+    last_clip_end_time = -999.0  # end time of last verified clip
 
     # =========================================================================
     # PHASE 1: PRE-SCAN (DETECT ALL CANDIDATE EVENTS)
     # =========================================================================
     all_candidate_abs_timestamps = []
     _log("PHASE 1: Detecting all candidate events across all chunks...", "STEP")
-    
+
     for chunk_idx, (c_start, c_duration) in enumerate(chunks):
         chunk_num = chunk_idx + 1
-        
+
         # Audio scanning progress (allocated 0-20% of total)
         if progress_callback:
             scan_pct = 10 + (chunk_idx / len(chunks) * 15)
-            progress_callback(int(scan_pct), "event_detection", 
-                             f"Audio scanning: Chunk {chunk_num}/{len(chunks)}")
+            progress_callback(
+                int(scan_pct),
+                "event_detection",
+                f"Audio scanning: Chunk {chunk_num}/{len(chunks)}",
+            )
 
-        print(f"\n🔍 Scanning Chunk {chunk_num} ({c_start/60:.2f}m - {(c_start+c_duration)/60:.2f}m)...")
-        
+        print(
+            f"\n🔍 Scanning Chunk {chunk_num} ({c_start/60:.2f}m - {(c_start+c_duration)/60:.2f}m)..."
+        )
+
         temp_audio = os.path.join(output_base, f"temp_audio_c{chunk_num}.wav")
         try:
             subprocess.check_call(
                 f'ffmpeg -ss {c_start} -t {c_duration} -i "{video_path}" '
                 f'-ac 1 -ar 8000 -vn "{temp_audio}" -y -loglevel error',
-                shell=True
+                shell=True,
             )
             if os.path.exists(temp_audio):
                 y, sr = librosa.load(temp_audio, sr=None)
-                os.remove(temp_audio) # Clean up audio immediately
+                os.remove(temp_audio)  # Clean up audio immediately
                 chunk_candidates_rel = detect_events(y, sr, min_gap_sec=40)
-                
+
                 for ts_rel in chunk_candidates_rel:
                     all_candidate_abs_timestamps.append(c_start + ts_rel)
-                    
+
         except Exception as e:
             logging.error(f"Scan failed for chunk {chunk_num}: {e}")
-            if os.path.exists(temp_audio): os.remove(temp_audio)
+            if os.path.exists(temp_audio):
+                os.remove(temp_audio)
 
     total_video_candidates = len(all_candidate_abs_timestamps)
-    print(f"\n✅ PHASE 1 COMPLETE: Found {total_video_candidates} candidate events in total.")
+    print(
+        f"\n✅ PHASE 1 COMPLETE: Found {total_video_candidates} candidate events in total."
+    )
 
     # =========================================================================
     # PHASE 2: VERIFICATION & CLIPPING
     # =========================================================================
     _log("PHASE 2: Verifying events and cutting clips...", "STEP")
-    
+
     for ev_idx, abs_ts in enumerate(all_candidate_abs_timestamps):
         current_ev_num = ev_idx + 1
-        
+
         # Mapping progress to 25% - 85% range
         # (100% - 25% start - 15% end = 60% for verification)
         if progress_callback and total_video_candidates > 0:
             ev_prog = 25 + (ev_idx / total_video_candidates * 60)
             progress_callback(
-                int(ev_prog), 
+                int(ev_prog),
                 "event_verification",
                 f"Verifying event: {current_ev_num}/{total_video_candidates}",
                 verified_count=len(all_verified_events),
                 total_events=total_video_candidates,
-                current_events=all_verified_events[-5:]
+                current_events=all_verified_events[-5:],
             )
 
         # ── SPEED: skip if this event falls inside the previous clip window ──
         if abs_ts < last_clip_end_time - 5:
-            print(f"\n--- Event {current_ev_num}/{total_video_candidates} at {abs_ts:.2f}s --- ⏭️  SKIPPED (Duplicate window)")
+            print(
+                f"\n--- Event {current_ev_num}/{total_video_candidates} at {abs_ts:.2f}s --- ⏭️  SKIPPED (Duplicate window)"
+            )
             continue
 
-        print(f"\n--- Event {current_ev_num}/{total_video_candidates} at {abs_ts:.2f}s ---")
+        print(
+            f"\n--- Event {current_ev_num}/{total_video_candidates} at {abs_ts:.2f}s ---"
+        )
         event_dir = os.path.join(output_base, f"event_{current_ev_num}")
         os.makedirs(event_dir, exist_ok=True)
 
-        t_pts  = {}
+        t_pts = {}
         scores = {}
 
         def is_readable(data):
@@ -472,40 +647,50 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
             capture_scoreboard_full_width(shared_cap, base_ts, img_path)
             data = get_score_from_image_ai(img_path)
             scores[base_key] = data
-            if is_readable(data): return base_key, data
+            if is_readable(data):
+                return base_key, data
 
             for fb_name, offset in fallbacks:
-                fb_ts  = max(0, base_ts + offset)
+                fb_ts = max(0, base_ts + offset)
                 fb_key = f"{base_key}_{fb_name}"
                 t_pts[fb_key] = fb_ts
                 fb_img = os.path.join(event_dir, f"{fb_key}.jpg")
                 capture_scoreboard_full_width(shared_cap, fb_ts, fb_img)
                 fb_data = get_score_from_image_ai(fb_img)
                 scores[fb_key] = fb_data
-                if is_readable(fb_data): return fb_key, fb_data
+                if is_readable(fb_data):
+                    return fb_key, fb_data
             return base_key, data
 
         # Resolve S1, S2, S3
         s1_key, s1_data = get_valid_ss("S1", abs_ts - 19, [("S4", -29), ("S5", -39)])
-        s2_key, s2_data = get_valid_ss("S2", abs_ts,      [("S4", -5)])
+        s2_key, s2_data = get_valid_ss("S2", abs_ts, [("S4", -5)])
         s3_key, s3_data = get_valid_ss("S3", abs_ts + 16, [("S4", 26), ("S5", 36)])
 
         # Compare and Verify
         def compare_pair(k1, d1, k2, d2, label=""):
-            if not is_readable(d1) or not is_readable(d2): return None, 0.0
+            if not is_readable(d1) or not is_readable(d2):
+                return None, 0.0
             sc_diff = d2["score"] - d1["score"]
             wk1, wk2 = d1.get("wicket"), d2.get("wicket")
             conf = min(d1.get("confidence", 0.5), d2.get("confidence", 0.5))
-            if wk1 is not None and wk2 is not None and wk2 > wk1: return "WICKET", conf
-            if sc_diff == 6: return "SIX", conf
-            if sc_diff == 4: return "FOUR", conf
+            if wk1 is not None and wk2 is not None and wk2 > wk1:
+                return "WICKET", conf
+            if sc_diff == 6:
+                return "SIX", conf
+            if sc_diff == 4:
+                return "FOUR", conf
             return None, 0.0
 
         verified = False
         event_type = None
         prev_data = curr_data = prev_key_final = curr_key_final = None
 
-        comparisons = [(s1_key, s1_data, s2_key, s2_data), (s1_key, s1_data, s3_key, s3_data), (s2_key, s2_data, s3_key, s3_data)]
+        comparisons = [
+            (s1_key, s1_data, s2_key, s2_data),
+            (s1_key, s1_data, s3_key, s3_data),
+            (s2_key, s2_data, s3_key, s3_data),
+        ]
         for k1, d1, k2, d2 in comparisons:
             e_type, conf = compare_pair(k1, d1, k2, d2, label=f"{k1}-{k2}")
             if e_type:
@@ -515,10 +700,14 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
                 break
 
         if verified:
-            wk_change = (curr_data.get("wicket", 0) or 0) > (prev_data.get("wicket", 0) or 0)
+            wk_change = (curr_data.get("wicket", 0) or 0) > (
+                prev_data.get("wicket", 0) or 0
+            )
             transition_key = (prev_data["score"], curr_data["score"], wk_change)
             if transition_key in verified_score_transitions:
-                print(f"    ⏭️  DUPLICATE transition {prev_data['score']}→{curr_data['score']} already captured")
+                print(
+                    f"    ⏭️  DUPLICATE transition {prev_data['score']}→{curr_data['score']} already captured"
+                )
                 verified = False
 
         if verified:
@@ -526,46 +715,71 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
             last_clip_end_time = abs_ts + 16
             print(f"    ✨ VERIFIED: {event_type}")
 
-            d1_clean = get_score_from_image_ai(os.path.join(event_dir, f"{prev_key_final}.jpg"), is_verified=True)
-            d2_clean = get_score_from_image_ai(os.path.join(event_dir, f"{curr_key_final}.jpg"), is_verified=True)
+            d1_clean = get_score_from_image_ai(
+                os.path.join(event_dir, f"{prev_key_final}.jpg"), is_verified=True
+            )
+            d2_clean = get_score_from_image_ai(
+                os.path.join(event_dir, f"{curr_key_final}.jpg"), is_verified=True
+            )
 
             def format_score(data, raw):
                 over = "0.0"
                 if data and data.get("clean_text"):
-                    m2 = re.search(r'(\d+\.\d+)', str(data["clean_text"]))
-                    if m2: over = m2.group(1)
+                    m2 = re.search(r"(\d+\.\d+)", str(data["clean_text"]))
+                    if m2:
+                        over = m2.group(1)
                 runs = raw["score"]
                 wickets = raw["wicket"] if raw["wicket"] is not None else 0
                 return f"{runs}/{wickets} ({over})"
 
-            prev_str, curr_str = format_score(d1_clean, prev_data), format_score(d2_clean, curr_data)
+            prev_str, curr_str = format_score(d1_clean, prev_data), format_score(
+                d2_clean, curr_data
+            )
             try:
                 over_start = prev_str.split("(")[1].split(")")[0]
                 over_end = curr_str.split("(")[1].split(")")[0]
-            except: over_start = over_end = "0.0"
+            except:
+                over_start = over_end = "0.0"
 
-            all_verified_events.append({
-                "event_id": current_ev_num,
-                "time_window": f"{over_start}-{over_end}",
-                "event_type": event_type,
-                "event_value": (curr_data["score"] - prev_data["score"]) if event_type in ["FOUR", "SIX"] else 1,
-                "runs_added": (curr_data["score"] - prev_data["score"]) if event_type in ["FOUR", "SIX"] else 0,
-                "timestamp": abs_ts,
-                "previous": prev_str,
-                "current": curr_str,
-                "team": d2_clean.get("team") if d2_clean and d2_clean.get("team") else d1_clean.get("team") if d1_clean else None,
-                "comparison_keys": f"{prev_key_final} & {curr_key_final}"
-            })
+            all_verified_events.append(
+                {
+                    "event_id": current_ev_num,
+                    "time_window": f"{over_start}-{over_end}",
+                    "event_type": event_type,
+                    "event_value": (
+                        (curr_data["score"] - prev_data["score"])
+                        if event_type in ["FOUR", "SIX"]
+                        else 1
+                    ),
+                    "runs_added": (
+                        (curr_data["score"] - prev_data["score"])
+                        if event_type in ["FOUR", "SIX"]
+                        else 0
+                    ),
+                    "timestamp": abs_ts,
+                    "previous": prev_str,
+                    "current": curr_str,
+                    "team": (
+                        d2_clean.get("team")
+                        if d2_clean and d2_clean.get("team")
+                        else d1_clean.get("team") if d1_clean else None
+                    ),
+                    "comparison_keys": f"{prev_key_final} & {curr_key_final}",
+                }
+            )
 
             clips_dir = os.path.join(output_base, "verified_clips")
             os.makedirs(clips_dir, exist_ok=True)
             temp_clip_path = os.path.join(event_dir, f"highlight_{current_ev_num}.mp4")
             final_clip_path = os.path.join(clips_dir, f"highlight_{current_ev_num}.mp4")
-            
+
             clip_start_time = max(0, abs_ts - 19)
             print(f"    ✂️  Cutting clip {current_ev_num}/{total_video_candidates}...")
             try:
-                subprocess.check_call(f'ffmpeg -ss {clip_start_time} -t 35 -i "{video_path}" -c:v libx264 -preset ultrafast "{temp_clip_path}" -y -loglevel error', shell=True)
+                subprocess.check_call(
+                    f'ffmpeg -ss {clip_start_time} -t 35 -i "{video_path}" -c:v libx264 -preset ultrafast "{temp_clip_path}" -y -loglevel error',
+                    shell=True,
+                )
                 shutil.move(temp_clip_path, final_clip_path)
                 all_verified_clips_paths.append(final_clip_path)
                 shutil.rmtree(event_dir, ignore_errors=True)
@@ -582,23 +796,25 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
     _log("PHASE 3: Capturing final match state...", "STEP")
     final_state_ts = max(0, duration - 5)
     final_img_path = os.path.join(output_base, "final_scoreboard.jpg")
-    
+
     match_result_str = None
     if capture_scoreboard_full_width(shared_cap, final_state_ts, final_img_path):
         final_data = get_score_from_image_ai(final_img_path, is_verified=True)
         if final_data and final_data.get("match_result"):
             match_result_str = final_data["match_result"]
             print(f"    🏆 MATCH RESULT DETECTED: {match_result_str}")
-        
+
         # Also add this as a special event if it contains winner info
         if match_result_str:
-            all_verified_events.append({
-                "event_id": 999, # Special ID for final result
-                "event_type": "MATCH_RESULT",
-                "timestamp": final_state_ts,
-                "match_result": match_result_str,
-                "current": final_data.get("clean_text", "Result")
-            })
+            all_verified_events.append(
+                {
+                    "event_id": 999,  # Special ID for final result
+                    "event_type": "MATCH_RESULT",
+                    "timestamp": final_state_ts,
+                    "match_result": match_result_str,
+                    "current": final_data.get("clean_text", "Result"),
+                }
+            )
 
     # Release shared VideoCapture
     shared_cap.release()
@@ -615,14 +831,14 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
     if all_verified_clips_paths:
         print(f"\n🔗 Merging {len(all_verified_clips_paths)} clips...")
         merge_list = os.path.join(output_base, "clips_to_merge.txt")
-        with open(merge_list, "w", encoding='utf-8') as f:
+        with open(merge_list, "w", encoding="utf-8") as f:
             for p in all_verified_clips_paths:
-                safe_path = os.path.abspath(p).replace('\\', '/')
+                safe_path = os.path.abspath(p).replace("\\", "/")
                 f.write(f"file '{safe_path}'\n")
 
         subprocess.call(
             f'ffmpeg -f concat -safe 0 -i "{merge_list}" -c copy "{final_video_path}" -y -loglevel quiet',
-            shell=True
+            shell=True,
         )
     else:
         print("⚠️  No verified events found — no highlight video generated.")
@@ -647,9 +863,9 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
         progress_callback(100, "complete", "Processing complete!")
 
     print(f"\n🎉 DONE!  →  {final_video_path}")
-    # NOTE: We no longer delete output_base here because the calling task 
+    # NOTE: We no longer delete output_base here because the calling task
     # (in tasks.py) needs to read the JSON and move the video before cleaning up.
-    
+
     # Cleanup: Delete original uploaded video to save space immediately
     if videos and os.path.exists(video_path):
         try:
@@ -657,13 +873,13 @@ def generate_highlights(videos=None, output_dir=None, progress_callback=None, ma
             print(f"🧹 Cleaned up original upload: {video_path}")
         except Exception:
             pass
-            
+
     return {
-        "success":            True,
-        "verified_events":    all_verified_events,
-        "clips_generated":    len(all_verified_clips_paths),
-        "output_video":       os.path.abspath(final_video_path),
-        "event_analysis_dir": os.path.abspath(output_base)
+        "success": True,
+        "verified_events": all_verified_events,
+        "clips_generated": len(all_verified_clips_paths),
+        "output_video": os.path.abspath(final_video_path),
+        "event_analysis_dir": os.path.abspath(output_base),
     }
 
 

@@ -83,6 +83,9 @@ def upload_video_api(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     if 'video' not in request.FILES:
+         logging.error(f"UPLOAD FAILED: 'video' not in request.FILES. Keys present: {list(request.FILES.keys())}")
+         logging.error(f"POST keys: {list(request.POST.keys())}")
+         logging.error(f"Content-Type: {request.content_type}")
          return JsonResponse({'error': 'No video file provided'}, status=400)
          
     # Cleanup old sessions
