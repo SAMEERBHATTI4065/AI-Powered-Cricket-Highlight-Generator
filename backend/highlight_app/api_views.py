@@ -92,19 +92,22 @@ def upload_video_api(request):
         logging.error(f"Cleanup failed: {e}")
 
     session_id = str(uuid.uuid4())
-    upload_dir = Path('/app/temp/cricket_uploads')
-    results_dir = Path('/app/temp/cricket_results') / session_id
+    upload_dir = Path(settings.MEDIA_ROOT) / 'uploads'
+    results_dir = Path(settings.MEDIA_ROOT) / 'results' / session_id
     
     try:
         # Check disk space safely
-        tmp_stat = shutil.disk_usage('/app/temp')
-        free_mb = tmp_stat.free / (1024 * 1024)
-        
-        if free_mb < 200:
-             return JsonResponse({
-                'error': f'Server storage is full ({free_mb:.0f} MB free).',
-                'details': 'Temporary processing space is nearly full. Please wait a few minutes while cleanup runs.'
-            }, status=507)
+        try:
+            tmp_stat = shutil.disk_usage(settings.MEDIA_ROOT)
+            free_mb = tmp_stat.free / (1024 * 1024)
+            
+            if free_mb < 200:
+                 return JsonResponse({
+                    'error': f'Server storage is full ({free_mb:.0f} MB free).',
+                    'details': 'Temporary processing space is nearly full. Please wait a few minutes while cleanup runs.'
+                }, status=507)
+        except:
+            pass # Skip check if disk_usage fails
 
         upload_dir.mkdir(parents=True, exist_ok=True)
         results_dir.mkdir(parents=True, exist_ok=True)
@@ -134,7 +137,7 @@ def upload_video_api(request):
     # --- Disk Space Check (Require at least 300MB free) ---
     import shutil as _shutil
     try:
-        free_bytes = _shutil.disk_usage('/app/temp').free
+        free_bytes = _shutil.disk_usage(settings.MEDIA_ROOT).free
         free_mb = free_bytes / (1024 * 1024)
         if free_mb < 100:
             return JsonResponse({

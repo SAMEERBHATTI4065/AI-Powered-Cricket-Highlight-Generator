@@ -36,9 +36,8 @@ def process_video_task(self, video_path, session_id, params=None):
     sessions_root = Path(settings.MEDIA_ROOT) / 'cricket_sessions'
     sessions_root.mkdir(parents=True, exist_ok=True)
     
-    # --- CHANGED: Use /app/temp for processing to leverage the shared Docker volume ---
-    tmp_sessions_root = Path("/app/temp/cricket_sessions")
-    results_dir = tmp_sessions_root / session_id
+    # Use MEDIA_ROOT for processing results
+    results_dir = Path(settings.MEDIA_ROOT) / 'cricket_results' / session_id
     results_dir.mkdir(parents=True, exist_ok=True)
     _tlog(f"Results dir: {results_dir.absolute()}", "FILE")
     
