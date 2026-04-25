@@ -25,6 +25,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PORT 7860
 ENV PYTHONPATH=/app/backend
+ENV HOME=/app
 
 # Install Python requirements
 COPY backend/requirements.txt ./requirements.txt
@@ -40,10 +41,8 @@ COPY --from=frontend-builder /app/backend/static/react ./backend/static/react
 COPY start.sh .
 RUN chmod +x start.sh
 
-# Create media and static folders if they don't exist
-RUN mkdir -p /app/media /app/backend/staticfiles
-
-# Permissions for Hugging Face
+# Create ALL necessary folders with open permissions
+RUN mkdir -p /app/media /app/temp/cricket_uploads /app/temp/cricket_results /app/temp/cricket_sessions /app/backend/staticfiles
 RUN chmod -R 777 /app
 
 # Expose Hugging Face default port
