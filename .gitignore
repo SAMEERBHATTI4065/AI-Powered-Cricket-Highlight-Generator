@@ -82,4 +82,4 @@ frontend/.vite/
 *.webm
 
 # Exceptions
-!frontend/public/static/demo-video.mp4
+!frontend/public/demo-video.mp4
