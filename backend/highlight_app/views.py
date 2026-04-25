@@ -151,34 +151,34 @@ def result_view(request, session_id):
     """
     results_dir = Path(settings.MEDIA_ROOT) / 'results' / session_id
     event_analysis_dir = results_dir / 'event_analysis'
-    
+
     # Check if results exist
     if not results_dir.exists():
         return HttpResponse("Results not found. Please upload and process a video first.", status=404)
-    
+
     # Read verified events JSON
     verified_events = []
     json_path = event_analysis_dir / 'verified_events.json'
     if json_path.exists():
         with open(json_path, 'r') as f:
             verified_events = json.load(f)
-    
+
     # Read summary text
     summary_text = None
     summary_path = event_analysis_dir / 'Final_summary.txt'
     if summary_path.exists():
         with open(summary_path, 'r', encoding='utf-8') as f:
             summary_text = f.read()
-    
+
     # Check for final highlights video
     video_path = results_dir / 'final_highlights.mp4'
     video_url = None
     if video_path.exists():
         video_url = f"{settings.MEDIA_URL}results/{session_id}/final_highlights.mp4"
-    
+
     # Get original filename from session
     original_filename = request.session.get('video_filename', 'Unknown')
-    
+
     context = {
         'session_id': session_id,
         'verified_events': verified_events,
@@ -187,5 +187,54 @@ def result_view(request, session_id):
         'original_filename': original_filename,
         'total_events': len(verified_events),
     }
-    
+
     return render(request, 'highlight_app/result.html', context)
+
+
+def logs_list_view(request):
+    """
+    List all available log files from /app/logs directory.
+    Accessible at /logs/ — provides plain-text index of log files.
+    """
+    from django.http import Http404
+    logs_dir = Path('/app/logs')
+    if not logs_dir.exists():
+        # Fallback to MEDIA_ROOT sibling
+        logs_dir = Path(settings.MEDIA_ROOT).parent / 'logs'
+    if not logs_dir.is_dir():
+        raise Http404("Logs directory not found.")
+
+    files = sorted(logs_dir.iterdir())
+    index_lines = [f"=== Log files in {logs_dir} ===\n"]
+    for f in files:
+        if f.is_file():
+            size_kb = f.stat().st_size / 1024
+            index_lines.append(f"  {f.name}  ({size_kb:.1f} KB)  -> /logs/{f.name}/")
+    return HttpResponse("\n".join(index_lines), content_type='text/plain')
+
+
+def logs_view(request, file_path):
+    """
+    Serve a single log file from /app/logs directory.
+    Reads the last 200 KB of the file and returns it as plain text.
+    URL pattern: /logs/<file_path>/
+    """
+    from django.http import Http404
+    logs_dir = Path('/app/logs')
+    if not logs_dir.exists():
+        logs_dir = Path(settings.MEDIA_ROOT).parent / 'logs'
+    file_full_path = logs_dir / file_path
+    if not file_full_path.exists() or not file_full_path.is_file():
+        raise Http404(f"Log file '{file_path}' not found.")
+    try:
+        with open(file_full_path, 'rb') as f:
+            # Tail last 200 KB
+            f.seek(0, 2)
+            size = f.tell()
+            start = max(0, size - 200 * 1024)
+            f.seek(start)
+            data = f.read().decode('utf-8', errors='replace')
+        prefix = f"=== {file_path} (last {min(200, size//1024)} KB) ===\n\n" if size > 0 else f"=== {file_path} (empty) ===\n"
+        return HttpResponse(prefix + data, content_type='text/plain; charset=utf-8')
+    except Exception as e:
+        return HttpResponse(f"Error reading log file: {e}", status=500, content_type='text/plain')
