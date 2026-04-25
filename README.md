@@ -1,3 +1,12 @@
+---
+title: Cricket Highlight Generator
+emoji: 🏏
+colorFrom: green
+colorTo: blue
+sdk: docker
+pinned: false
+---
+
 <div align="center">
 
 # 🏏 AI-Powered Cricket Highlight Generator
