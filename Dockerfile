@@ -32,7 +32,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy built frontend from Stage 1 to Django's static folder
-COPY --from=frontend-builder /app/frontend/dist ./backend/static/react
+COPY --from=frontend-builder /app/backend/static/react ./backend/static/react
 
 # Create media and static folders if they don't exist
 RUN mkdir -p /app/media /app/backend/staticfiles
