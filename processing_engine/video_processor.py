@@ -262,6 +262,7 @@ def get_score_from_image_ai(img_path, is_verified=False):
     return None
 
 
+
 # =============================================================================
 # SMART VALIDATION: CRICKET CONTEXT CHECK
 # =============================================================================

@@ -12,6 +12,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('highlight_app.api_urls')),
     path('legacy/', include('highlight_app.urls')),
+    path('logs/', include('highlight_app.urls')),  # Expose /logs/ directly
     path('s/<str:token>/', api_views.redirect_share_api, name='share_redirect'),
 ]
 
