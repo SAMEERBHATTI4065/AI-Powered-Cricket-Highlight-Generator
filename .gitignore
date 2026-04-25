@@ -80,3 +80,6 @@ frontend/.vite/
 *.mov
 *.mkv
 *.webm
+
+# Exceptions
+!frontend/public/static/demo-video.mp4
