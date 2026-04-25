@@ -1,0 +1,116 @@
+# Docker Compose for Cricket Highlight Project
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: cricket_highlights
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - docker_postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Message Broker
+  redis:
+    image: redis:7-alpine
+    networks:
+      - app_network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Django Backend API & Frontend Server
+  backend:
+    build:
+      context: ..
+      dockerfile: docker/backend.Dockerfile
+    image: cricket-backend:latest
+    command: python /app/backend/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ../backend:/app/backend
+      - ../processing_engine:/app/processing_engine
+      - docker_media_data:/app/media
+      - docker_logs_data:/app/logs
+      - docker_temp_data:/app/temp
+      - docker_analysis_data:/app/event_analysis
+    ports:
+      - "8000:8000"
+    env_file:
+      - ../.env
+    environment:
+      - DEBUG=1
+      - PYTHONPATH=/app/backend
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/cricket_highlights
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - MEDIA_ROOT=/app/media
+      - PYTHONIOENCODING=utf-8
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 1g
+    networks:
+      - app_network
+
+  # Celery Worker (AI Engine)
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/worker.Dockerfile
+    image: cricket-worker:latest
+    command: celery -A cricket_highlights worker --loglevel=info -c 1
+    shm_size: 1gb
+    volumes:
+      - ../backend:/app/backend
+      - ../processing_engine:/app/processing_engine
+      - docker_media_data:/app/media
+      - docker_logs_data:/app/logs
+      - docker_temp_data:/app/temp
+      - docker_analysis_data:/app/event_analysis
+    env_file:
+      - ../.env
+    environment:
+      - DEBUG=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/cricket_highlights
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - MEDIA_ROOT=/app/media
+      - PYTHONIOENCODING=utf-8
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  docker_postgres_data:
+  docker_media_data:
+  docker_logs_data:
+  docker_temp_data:
+  docker_analysis_data:
+  docker_ocr_models:
