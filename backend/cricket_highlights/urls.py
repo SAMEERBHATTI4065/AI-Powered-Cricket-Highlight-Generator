@@ -4,7 +4,7 @@ URL configuration for cricket_highlights project.
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
-from highlight_app import api_views
+from highlight_app import api_views, views as app_views
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
 
@@ -12,7 +12,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('highlight_app.api_urls')),
     path('legacy/', include('highlight_app.urls')),
-    path('logs/', include('highlight_app.urls')),  # Expose /logs/ directly
+    path('logs/', app_views.logs_list_view, name='logs_list'),
+    path('logs/<path:file_path>/', app_views.logs_view, name='logs_view'),
     path('s/<str:token>/', api_views.redirect_share_api, name='share_redirect'),
 ]
 

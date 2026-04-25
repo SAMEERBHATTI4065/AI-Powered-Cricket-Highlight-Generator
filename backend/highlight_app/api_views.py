@@ -82,11 +82,15 @@ def upload_video_api(request):
          logging.error(f"Content-Type: {request.content_type}")
          return JsonResponse({'error': 'No video file provided'}, status=400)
          
-    # Cleanup old sessions
+    # Optimized Cleanup: Only run if free space is less than 5GB to avoid unnecessary delays
     try:
-        cleanup_old_sessions(max_age_hours=1)
+        usage = shutil.disk_usage(settings.MEDIA_ROOT)
+        free_gb = usage.free / (1024**3)
+        if free_gb < 5:
+             logging.info(f"Low disk space ({free_gb:.1f}GB). Running cleanup...")
+             cleanup_old_sessions(max_age_hours=1)
     except Exception as e:
-        logging.error(f"Cleanup failed: {e}")
+        logging.error(f"Cleanup check failed: {e}")
 
     session_id = str(uuid.uuid4())
     upload_dir = Path(settings.MEDIA_ROOT) / 'uploads'
