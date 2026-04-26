@@ -7,9 +7,9 @@ COPY frontend/ .
 RUN npm run build
 
 # --- STAGE 2: Python Backend & Final Image ---
-FROM python:3.10-slim
+FROM python:3.11-slim
 
-# System dependencies (FFmpeg and Redis are critical)
+# System dependencies
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libgl1 \
@@ -24,29 +24,28 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV PORT 7860
-ENV PYTHONPATH=/app/backend
+ENV PYTHONPATH=/app/backend:/app
 ENV HOME=/app
 
 # Install Python requirements
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Pre-download EasyOCR models into a persistent location
+RUN python -c "import easyocr; reader = easyocr.Reader(['en'], gpu=False)"
+
 # Copy all project files
 COPY . .
 
-# Copy built frontend from Stage 1 to Django's static folder
+# Copy built frontend from Stage 1
 COPY --from=frontend-builder /app/backend/static/react ./backend/static/react
 
-# Copy startup script
-COPY start.sh .
-RUN chmod +x start.sh
-
-# Create ALL necessary folders with open permissions
-RUN mkdir -p /app/media /app/temp/cricket_uploads /app/temp/cricket_results /app/temp/cricket_sessions /app/backend/staticfiles
+# Create necessary folders and set permissions
+RUN mkdir -p /app/logs /app/media/uploads /app/media/results /app/temp /app/backend/staticfiles
 RUN chmod -R 777 /app
 
-# Expose Hugging Face default port
-EXPOSE 7860
+# Run collectstatic during build to save time on startup
+RUN cd backend && python manage.py collectstatic --noinput
 
-# Start everything via start.sh
+# Start via start.sh
 CMD ["/bin/bash", "start.sh"]
