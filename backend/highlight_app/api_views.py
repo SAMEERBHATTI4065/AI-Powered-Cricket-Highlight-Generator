@@ -125,28 +125,24 @@ def upload_video_api(request):
         }, status=500)
     
     video_file = request.FILES['video']
-    
-    # --- File Size Limit (200MB) ---
-    MAX_UPLOAD_MB = 10240  # 10GB
     file_size_mb = video_file.size / (1024 * 1024)
+    logging.info(f"UPLOAD: Received file '{video_file.name}' ({file_size_mb:.1f} MB)")
+    
+    # --- File Size Limit (10GB) ---
+    MAX_UPLOAD_MB = 10240
     if file_size_mb > MAX_UPLOAD_MB:
-        return JsonResponse({
-            'error': f'Video file too large ({file_size_mb:.0f} MB). Maximum allowed is {MAX_UPLOAD_MB} MB. Please compress the video before uploading.',
-            'details': 'File size limit exceeded to preserve server performance and storage.'
-        }, status=413)
+        logging.error(f"UPLOAD REJECTED: File too large ({file_size_mb:.1f}MB)")
+        return JsonResponse({'error': 'File too large'}, status=413)
 
-    # --- Disk Space Check (Require at least 300MB free) ---
-    import shutil as _shutil
+    # --- Disk Space Check ---
     try:
-        free_bytes = _shutil.disk_usage(settings.MEDIA_ROOT).free
-        free_mb = free_bytes / (1024 * 1024)
+        free_mb = shutil.disk_usage(settings.MEDIA_ROOT).free / (1024 * 1024)
+        logging.info(f"DISK: Free space on media root: {free_mb:.1f} MB")
         if free_mb < 100:
-            return JsonResponse({
-                'error': f'Server storage is full ({free_mb:.0f} MB free). Please try again in a few minutes while the server cleans up old sessions.',
-                'details': 'We temporarily ran out of disk space on our ephemeral storage. Cleanup routines will free it shortly.'
-            }, status=507)
-    except Exception:
-        pass
+            logging.error("UPLOAD REJECTED: Insufficient disk space")
+            return JsonResponse({'error': 'Insufficient storage'}, status=507)
+    except Exception as e:
+        logging.warning(f"Disk check failed: {e}")
         
     processing_params = {
         'format': request.POST.get('format', 'MP4'),
@@ -154,31 +150,28 @@ def upload_video_api(request):
         'style': request.POST.get('style', 'Professional')
     }
     
-    # Use stem to avoid double extension
     filename_str = video_file.name
     while Path(filename_str).suffix in ['.mp4', '.mkv', '.avi', '.mov']:
         filename_str = Path(filename_str).stem
     
-    original_ext = Path(video_file.name).suffix or '.mp4'
-    video_filename = f"{session_id}_{filename_str}{original_ext}"
+    video_filename = f"{session_id}_{filename_str}{Path(video_file.name).suffix or '.mp4'}"
     video_path = upload_dir / video_filename
     
     try:
+        logging.info(f"FILE: Saving video to {video_path}")
         with open(video_path, 'wb+') as destination:
             for chunk in video_file.chunks():
                 destination.write(chunk)
-    except OSError as e:
-        # Handle disk full or other I/O errors
-        if os.path.exists(video_path):
-            os.remove(video_path)
-        return JsonResponse({
-            'error': f"Server storage error: {str(e)}. Please ensure the server has enough free space.",
-            'details': "The video upload failed due to an I/O error, often caused by insufficient disk space."
-        }, status=507) # 507 Insufficient Storage
+        logging.info("FILE: Video saved successfully")
+    except Exception as e:
+        logging.error(f"FILE ERROR: {e}")
+        return JsonResponse({'error': f"Failed to save video: {e}"}, status=500)
             
     # Trigger process task asynchronously
     try:
+        logging.info(f"CELERY: Triggering task for session {session_id}...")
         task = process_video_task.delay(str(video_path), session_id, params=processing_params)
+        logging.info(f"CELERY: Task sent! Job ID: {task.id}")
         
         return JsonResponse({
             'session_id': session_id,
@@ -188,6 +181,7 @@ def upload_video_api(request):
         })
         
     except Exception as e:
+        logging.error(f"CELERY ERROR: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
 def get_status_api(request, job_id):
