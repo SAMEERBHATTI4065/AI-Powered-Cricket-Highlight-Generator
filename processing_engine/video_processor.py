@@ -469,44 +469,59 @@ def generate_highlights(
     # PHASE 1: PRE-SCAN (DETECT ALL CANDIDATE EVENTS)
     # =========================================================================
     all_candidate_abs_timestamps = []
-    _log("PHASE 1: Detecting all candidate events across all chunks...", "STEP")
+    _log("PHASE 1: Detecting all candidate events across all chunks (PARALLEL)...", "STEP")
 
-    for chunk_idx, (c_start, c_duration) in enumerate(chunks):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+
+    def _scan_chunk_internal(chunk_info):
+        chunk_idx, (c_start, c_duration) = chunk_info
         chunk_num = chunk_idx + 1
-
-        # Audio scanning progress (allocated 0-20% of total)
-        if progress_callback:
-            scan_pct = 10 + (chunk_idx / len(chunks) * 15)
-            progress_callback(
-                int(scan_pct),
-                "event_detection",
-                f"Audio scanning: Chunk {chunk_num}/{len(chunks)}",
-            )
-
-        print(
-            f"\n🔍 Scanning Chunk {chunk_num} ({c_start/60:.2f}m - {(c_start+c_duration)/60:.2f}m)..."
-        )
-
         temp_audio = os.path.join(output_base, f"temp_audio_c{chunk_num}.wav")
+        candidates = []
         try:
+            # Input seeking (-ss before -i) is fast
             subprocess.check_call(
                 f'ffmpeg -ss {c_start} -t {c_duration} -i "{video_path}" '
                 f'-ac 1 -ar 8000 -vn "{temp_audio}" -y -loglevel error',
                 shell=True,
             )
             if os.path.exists(temp_audio):
+                # Use librosa to load the extracted audio
                 y, sr = librosa.load(temp_audio, sr=None)
-                os.remove(temp_audio)  # Clean up audio immediately
+                os.remove(temp_audio)
                 chunk_candidates_rel = detect_events(y, sr, min_gap_sec=40)
-
                 for ts_rel in chunk_candidates_rel:
-                    all_candidate_abs_timestamps.append(c_start + ts_rel)
-
+                    candidates.append(c_start + ts_rel)
         except Exception as e:
             logging.error(f"Scan failed for chunk {chunk_num}: {e}")
             if os.path.exists(temp_audio):
                 os.remove(temp_audio)
+        return chunk_num, candidates
 
+    # Determine number of workers (max 4 to avoid memory spikes on Hugging Face)
+    max_workers = min(len(chunks), 4)
+    completed_chunks = 0
+    
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_chunk = {executor.submit(_scan_chunk_internal, (i, chunk)): i for i, chunk in enumerate(chunks)}
+        
+        for future in as_completed(future_to_chunk):
+            chunk_num, chunk_candidates = future.result()
+            all_candidate_abs_timestamps.extend(chunk_candidates)
+            completed_chunks += 1
+            
+            if progress_callback:
+                scan_pct = 10 + (completed_chunks / len(chunks) * 15)
+                progress_callback(
+                    int(scan_pct),
+                    "event_detection",
+                    f"Audio scanning: Chunk {completed_chunks}/{len(chunks)} complete",
+                )
+            
+            print(f"✅ Chunk {chunk_num} scan complete. Found {len(chunk_candidates)} candidates.")
+
+    # Sort timestamps as they might come out of order from parallel execution
+    all_candidate_abs_timestamps.sort()
     total_video_candidates = len(all_candidate_abs_timestamps)
     print(
         f"\n✅ PHASE 1 COMPLETE: Found {total_video_candidates} candidate events in total."

@@ -39,31 +39,39 @@ def cleanup_old_sessions(max_age_hours=1):
     current_time = time.time()
     max_age_seconds = max_age_hours * 3600
     
-    for session_dir in results_base.iterdir():
-        if session_dir.is_dir():
-            # Check directory age
-            dir_age = current_time - session_dir.stat().st_mtime
-            if dir_age > max_age_seconds:
-                try:
-                    shutil.rmtree(session_dir)
-                    print(f"🗑️ Cleaned up old session: {session_dir.name}")
-                except Exception as e:
-                    print(f"⚠️ Failed to cleanup {session_dir.name}: {e}")
+    # Use os.scandir for much faster traversal on large directories
+    try:
+        with os.scandir(results_base) as it:
+            for entry in it:
+                if entry.is_dir():
+                    # Check directory age
+                    if current_time - entry.stat().st_mtime > max_age_seconds:
+                        try:
+                            shutil.rmtree(entry.path)
+                            print(f"🗑️ Cleaned up old session: {entry.name}")
+                        except Exception as e:
+                            print(f"⚠️ Failed to cleanup {entry.name}: {e}")
+    except Exception as e:
+        print(f"⚠️ Cleanup failed: {e}")
     
     # --- ALSO CLEANUP /app/temp for Railway/Monolith sharing ---
     temp_paths = [Path('/app/temp/cricket_results'), Path('/app/temp/cricket_uploads')]
     for temp_base in temp_paths:
         if temp_base.exists():
-            for item in temp_base.iterdir():
-                if item.stat().st_mtime < (current_time - max_age_seconds):
-                    try:
-                        if item.is_dir():
-                            shutil.rmtree(item)
-                        else:
-                            os.remove(item)
-                        print(f"🧹 Cleaned up temp item: {item.name}")
-                    except Exception as e:
-                        print(f"⚠️ Failed to cleanup temp item {item.name}: {e}")
+            try:
+                with os.scandir(temp_base) as it:
+                    for entry in it:
+                        if current_time - entry.stat().st_mtime > max_age_seconds:
+                            try:
+                                if entry.is_dir():
+                                    shutil.rmtree(entry.path)
+                                else:
+                                    os.remove(entry.path)
+                                print(f"🧹 Cleaned up temp item: {entry.name}")
+                            except Exception as e:
+                                print(f"⚠️ Failed to cleanup temp item {entry.name}: {e}")
+            except:
+                pass
 
 
 def process_view(request):
