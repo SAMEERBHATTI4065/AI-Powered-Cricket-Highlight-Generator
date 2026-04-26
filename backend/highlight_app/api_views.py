@@ -77,18 +77,27 @@ def upload_video_api(request):
         return JsonResponse({'error': 'Method not allowed'}, status=405)
     
     if 'video' not in request.FILES:
-         logging.error(f"UPLOAD FAILED: 'video' not in request.FILES. Keys present: {list(request.FILES.keys())}")
+         logging.error(f"UPLOAD FAILED: 'video' not in request.FILES.")
+         logging.error(f"Keys present in FILES: {list(request.FILES.keys())}")
          logging.error(f"POST keys: {list(request.POST.keys())}")
-         logging.error(f"Content-Type: {request.content_type}")
+         logging.error(f"Content-Type: {request.META.get('CONTENT_TYPE')}")
+         logging.error(f"Content-Length: {request.META.get('CONTENT_LENGTH')}")
+         logging.error(f"Remote Addr: {request.META.get('REMOTE_ADDR')}")
          return JsonResponse({'error': 'No video file provided'}, status=400)
          
-    # Optimized Cleanup: Only run if free space is less than 5GB to avoid unnecessary delays
+    # Optimized Cleanup: Only run if free space is less than 5GB
+    # Use a cache-based throttle to avoid running cleanup on every single request
+    from django.core.cache import cache
+    cleanup_lock = cache.get('cleanup_in_progress')
+    
     try:
         usage = shutil.disk_usage(settings.MEDIA_ROOT)
         free_gb = usage.free / (1024**3)
-        if free_gb < 5:
+        if free_gb < 5 and not cleanup_lock:
              logging.info(f"Low disk space ({free_gb:.1f}GB). Running cleanup...")
+             cache.set('cleanup_in_progress', True, timeout=300) # 5 min lock
              cleanup_old_sessions(max_age_hours=1)
+             cache.delete('cleanup_in_progress')
     except Exception as e:
         logging.error(f"Cleanup check failed: {e}")
 
