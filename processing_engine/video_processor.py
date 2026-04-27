@@ -79,11 +79,9 @@ def get_reader():
     return reader
 
 
-# =============================================================================
 # IMPROVEMENT 6: BETTER clean_scoreboard_text()
 # - Handles dot-format overs (8.3) directly
 # - Extra fallback parsing layer (finds overs even without "P" token)
-# =============================================================================
 def clean_scoreboard_text(ocr_text):
     text = (
         ocr_text.replace("/", " ")
@@ -131,21 +129,32 @@ def clean_scoreboard_text(ocr_text):
                 if i + 2 < len(tokens) and tokens[i + 2].isdigit():
                     total_overs = tokens[i + 2]
 
-            # No dot, 2+ digits: "83" → "8.3"
+            # No dot, 2+ digits: "42" → "4.2", "421" → "42.1"
             elif nxt.isdigit() and len(nxt) >= 2:
-                overs = (
-                    f"{nxt[:-1]}.{nxt[-1]}" if len(nxt) >= 3 else f"{nxt[0]}.{nxt[1]}"
-                )
+                over_val = nxt[:-1]
+                ball_val = nxt[-1]
+                # Ball must be 0-5
+                if int(ball_val) <= 5:
+                    overs = f"{over_val}.{ball_val}"
+                else:
+                    overs = f"{nxt}.0"
+                
                 if i + 2 < len(tokens) and tokens[i + 2].isdigit():
                     total_overs = tokens[i + 2]
-                elif len(nxt) >= 4:
+                elif len(nxt) >= 4 and not overs.endswith(".0"):
                     total_overs = nxt[2:]
 
-            # Single digit: "8" → "8.0"
+            # Single digit: "4" 
             elif nxt.isdigit() and len(nxt) == 1:
-                overs = f"{nxt[0]}.0"
-                if i + 2 < len(tokens) and tokens[i + 2].isdigit():
-                    total_overs = tokens[i + 2]
+                # Check if next token is ball: ["P", "4", "2"]
+                if i + 2 < len(tokens) and tokens[i + 2].isdigit() and len(tokens[i + 2]) == 1 and int(tokens[i+2]) <= 5:
+                    overs = f"{nxt}.{tokens[i+2]}"
+                    if i + 3 < len(tokens) and tokens[i + 3].isdigit():
+                        total_overs = tokens[i + 3]
+                else:
+                    overs = f"{nxt}.0"
+                    if i + 2 < len(tokens) and tokens[i + 2].isdigit():
+                        total_overs = tokens[i + 2]
             break
 
     # --- Overs: Fallback 1 — explicit decimal like "7.5" ---
@@ -200,9 +209,7 @@ def clean_scoreboard_text(ocr_text):
     return result
 
 
-# =============================================================================
 # OCR SCORE EXTRACTION
-# =============================================================================
 def get_score_from_image_ai(img_path, is_verified=False):
     ocr_reader = get_reader()
     img = cv2.imread(img_path)
@@ -244,9 +251,20 @@ def get_score_from_image_ai(img_path, is_verified=False):
 
     nums = re.findall(r"\d+", full_text)
     if nums:
+        # Fallback: take first as score, second as wicket if it's small
+        score_val = int(nums[0])
+        wicket_val = None
+        if len(nums) > 1:
+            try:
+                w = int(nums[1])
+                if 0 <= w <= 10:
+                    wicket_val = w
+            except:
+                pass
+
         return {
-            "score": int(nums[0]),
-            "wicket": None,
+            "score": score_val,
+            "wicket": wicket_val,
             "team": clean_text.get("team") if isinstance(clean_text, dict) else None,
             "match_result": (
                 clean_text.get("match_result") if isinstance(clean_text, dict) else None
@@ -263,9 +281,7 @@ def get_score_from_image_ai(img_path, is_verified=False):
 
 
 
-# =============================================================================
 # SMART VALIDATION: CRICKET CONTEXT CHECK
-# =============================================================================
 def validate_video_context(cap, duration, sample_points=[60, 90, 120, 180, 240, 300]):
     """
     Checks if the video actually contains a cricket scoreboard and if it's already a highlight.
@@ -275,10 +291,8 @@ def validate_video_context(cap, duration, sample_points=[60, 90, 120, 180, 240, 
     return True, "Success"
 
 
-# =============================================================================
 # CAPTURE SCOREBOARD
 # Uses a shared VideoCapture object (IMPROVEMENT 5 — reuse cap)
-# =============================================================================
 def capture_scoreboard_full_width(cap, timestamp, output_path):
     """
     cap       : shared cv2.VideoCapture object
@@ -300,9 +314,7 @@ def capture_scoreboard_full_width(cap, timestamp, output_path):
     return False
 
 
-# =============================================================================
 # IMPROVEMENT 8: get_video_duration() using ffprobe
-# =============================================================================
 def get_video_duration(video_path):
     try:
         cmd = f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{video_path}"'
@@ -318,10 +330,8 @@ def get_video_duration(video_path):
         return 0
 
 
-# =============================================================================
 # AUDIO EVENT DETECTION
 # IMPROVEMENT 1: Rolling 30-min window mean (instead of one global mean)
-# =============================================================================
 def detect_events(y, sr, min_gap_sec=35):
     """
     Uses a rolling 30-minute window to compute local mean energy.
@@ -359,12 +369,10 @@ def detect_events(y, sr, min_gap_sec=35):
     return final_ts
 
 
-# =============================================================================
 # MAIN PIPELINE
 # IMPROVEMENT 2: Chunked processing (30-min chunks)
 # IMPROVEMENT 4: output_dir support
 # IMPROVEMENT 7: progress_callback support
-# =============================================================================
 def generate_highlights(
     videos=None, output_dir=None, progress_callback=None, max_process_minutes=None
 ):
@@ -417,9 +425,7 @@ def generate_highlights(
 
     print(f"🎞️ Total Duration: {duration / 60:.2f} minutes")
 
-    # =========================================================================
     # SMART VALIDATION: Check Context & Duration
-    # =========================================================================
     temp_cap = cv2.VideoCapture(video_path)
     is_valid, msg = validate_video_context(temp_cap, duration)
     temp_cap.release()
@@ -453,9 +459,7 @@ def generate_highlights(
 
     print(f"✂️ Processing in {len(chunks)} chunk(s) of ≤30 minutes each.")
 
-    # =========================================================================
     # SHARED VideoCapture  (IMPROVEMENT 5)
-    # =========================================================================
     shared_cap = cv2.VideoCapture(video_path)
     if not shared_cap.isOpened():
         return {"success": False, "error": f"Cannot open video: {video_path}"}
@@ -465,9 +469,7 @@ def generate_highlights(
     verified_score_transitions = set()  # (prev_score, curr_score, wicket_change)
     last_clip_end_time = -999.0  # end time of last verified clip
 
-    # =========================================================================
     # PHASE 1: PRE-SCAN (DETECT ALL CANDIDATE EVENTS)
-    # =========================================================================
     all_candidate_abs_timestamps = []
     _log("PHASE 1: Detecting all candidate events across all chunks (PARALLEL)...", "STEP")
 
@@ -527,9 +529,7 @@ def generate_highlights(
         f"\n✅ PHASE 1 COMPLETE: Found {total_video_candidates} candidate events in total."
     )
 
-    # =========================================================================
     # PHASE 2: VERIFICATION & CLIPPING
-    # =========================================================================
     _log("PHASE 2: Verifying events and cutting clips...", "STEP")
 
     for ev_idx, abs_ts in enumerate(all_candidate_abs_timestamps):
@@ -601,12 +601,22 @@ def generate_highlights(
             sc_diff = d2["score"] - d1["score"]
             wk1, wk2 = d1.get("wicket"), d2.get("wicket")
             conf = min(d1.get("confidence", 0.5), d2.get("confidence", 0.5))
-            if wk1 is not None and wk2 is not None and wk2 > wk1:
-                return "WICKET", conf
+            if wk1 is not None and wk2 is not None:
+                if wk2 > wk1:
+                    return "WICKET", conf
+                if wk2 < wk1:
+                    # Scoreboard reverted - clearly not a new event
+                    return None, 0.0
+
             if sc_diff == 6:
                 return "SIX", conf
             if sc_diff == 4:
                 return "FOUR", conf
+            
+            if sc_diff < 0:
+                # Scoreboard reverted or OCR error
+                return None, 0.0
+
             return None, 0.0
 
         verified = False
@@ -630,12 +640,22 @@ def generate_highlights(
             wk_change = (curr_data.get("wicket", 0) or 0) > (
                 prev_data.get("wicket", 0) or 0
             )
-            transition_key = (prev_data["score"], curr_data["score"], wk_change)
-            if transition_key in verified_score_transitions:
-                print(
-                    f"    ⏭️  DUPLICATE transition {prev_data['score']}→{curr_data['score']} already captured"
-                )
-                verified = False
+            
+            # --- GHOST WICKET / REVERTED DECISION CHECK ---
+            # If we found a wicket, but a later screenshot (S3) shows fewer wickets than our 'current' detection,
+            # then the umpire likely overturned the decision.
+            if event_type == "WICKET" and is_readable(s3_data):
+                if s3_data.get("wicket", 0) < curr_data.get("wicket", 0):
+                    print(f"    🚫 GHOST WICKET DETECTED: Decision likely overturned (Scoreboard: {curr_data['wicket']} -> {s3_data['wicket']})")
+                    verified = False
+            
+            if verified:
+                transition_key = (prev_data["score"], curr_data["score"], wk_change)
+                if transition_key in verified_score_transitions:
+                    print(
+                        f"    ⏭️  DUPLICATE transition {prev_data['score']}→{curr_data['score']} already captured"
+                    )
+                    verified = False
 
         if verified:
             verified_score_transitions.add(transition_key)
@@ -717,9 +737,7 @@ def generate_highlights(
             print("    ℹ️  Skipped (No clear score change found)")
             shutil.rmtree(event_dir, ignore_errors=True)
 
-    # =========================================================================
     # PHASE 3: FINAL MATCH STATE CAPTURE
-    # =========================================================================
     _log("PHASE 3: Capturing final match state...", "STEP")
     final_state_ts = max(0, duration - 5)
     final_img_path = os.path.join(output_base, "final_scoreboard.jpg")
@@ -746,9 +764,7 @@ def generate_highlights(
     # Release shared VideoCapture
     shared_cap.release()
 
-    # =========================================================================
     # MERGE ALL CLIPS
-    # =========================================================================
     # Keep final video INSIDE output_base to avoid race conditions with other sessions
     final_video_path = os.path.join(output_base, "final_highlights.mp4")
 
@@ -769,6 +785,41 @@ def generate_highlights(
         )
     else:
         print("⚠️  No verified events found — no highlight video generated.")
+
+    # =========================================================================
+    # GLOBAL CONSISTENCY CHECK (GHOST WICKET REMOVAL)
+    # =========================================================================
+    if all_verified_events:
+        _log("PHASE 2.7: Performing Global Consistency Check...", "STEP")
+        refined_events = []
+        for i, ev in enumerate(all_verified_events):
+            if ev.get("event_type") == "WICKET":
+                try:
+                    curr_str = ev.get("current", "0/0")
+                    match = re.search(r"[\-/](\d+)", curr_str)
+                    if match:
+                        wickets_at_event = int(match.group(1))
+                        
+                        # Look ahead: if any later stable event has fewer wickets, this was a ghost
+                        is_ghost = False
+                        # Check up to next 4 events
+                        for j in range(i + 1, min(i + 5, len(all_verified_events))):
+                            next_ev = all_verified_events[j]
+                            if next_ev.get("event_type") == "MATCH_RESULT": continue
+                            
+                            next_str = next_ev.get("current", "0/0")
+                            next_match = re.search(r"[\-/](\d+)", next_str)
+                            if next_match:
+                                next_wickets = int(next_match.group(1))
+                                if next_wickets < wickets_at_event:
+                                    is_ghost = True
+                                    _log(f"   🚫 GLOBAL CHECK: Event {ev['event_id']} (Wicket {wickets_at_event}) is a GHOST. Later event shows {next_wickets} wickets.", "WARN")
+                                    break
+                        if is_ghost: continue
+                except Exception:
+                    pass
+            refined_events.append(ev)
+        all_verified_events = refined_events
 
     # =========================================================================
     # JSON REPORT

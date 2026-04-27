@@ -19,9 +19,7 @@ def _slog(msg, level="INFO", indent=0):
 # Fix encoding for Windows console
 # sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
-# -----------------------------
 # 🔑 API Key setup
-# -----------------------------
 client = None
 
 def get_openai_client():
@@ -58,9 +56,7 @@ def get_openai_client():
 # Initialize early if possible, but don't fail import
 get_openai_client()
 
-# -----------------------------
 # Load Verified Events JSON
-# -----------------------------
 def load_events(json_file):
     _slog(f"Loading events from: {json_file}", "FILE")
     if not os.path.exists(json_file):
@@ -71,9 +67,7 @@ def load_events(json_file):
     _slog(f"Loaded {len(events)} events from JSON", "OK")
     return events
 
-# -----------------------------
 # Prepare prompt for LLM
-# -----------------------------
 def build_prompt(events, params=None):
     _slog("Building LLM prompt from events...", "AI")
     if params is None:
@@ -103,10 +97,10 @@ def build_prompt(events, params=None):
     team_max_scores = {}
 
     def parse_score(s):
-        m = re.match(r"(\d+)-(\d+)\s*\(([^)]+)\)", str(s))
+        m = re.match(r"(\d+)[\-/](\d+)\s*\(([^)]+)\)", str(s))
         if m:
             return f"{m.group(1)}/{m.group(2)}", m.group(3).strip()
-        m2 = re.match(r"(\d+)-(\d+)", str(s))
+        m2 = re.match(r"(\d+)[\-/](\d+)", str(s))
         if m2:
             return f"{m2.group(1)}/{m2.group(2)}", ""
         return str(s), ""
@@ -148,7 +142,7 @@ def build_prompt(events, params=None):
             event_lines.append(f"{team_prefix}SIX (6) — Score: {prev_score} → {curr_score} (+{runs} runs)")
         elif etype == "WICKET":
             total_wickets += 1
-            event_lines.append(f"{team_prefix}WICKET — Score: {prev_score} → {curr_score}")
+            event_lines.append(f"{team_prefix}WICKET — Score: {prev_score} → {curr_score} (Over {curr_over})")
 
     events_text = "\n".join(event_lines)
     _slog(f"Prompt stats: Runs={total_runs}, Wickets={total_wickets}, 4s={total_fours}, 6s={total_sixes}", "DATA")
@@ -185,21 +179,20 @@ def build_prompt(events, params=None):
 
          "WRITE A COMPREHENSIVE MATCH REPORT of 200-250 words. Follow these rules STRICTLY:\n"
         "1. **Structure**: If the event log contains multiple teams (e.g., [PAK] then [ENG]), structure the report to cover both innings. Mention the transition between the two.\n"
-        "2. **Opening**: Start with a HEAVILY CAPITALIZED opening word. Set the scene and mention the teams involved if identified.\n"
+        "2. **Opening**: Start with a compelling and atmospheric opening sentence. Set the scene and mention the teams involved if identified.\n"
         "3. **Narrative**: Follow the exact chronological order of the EVENT LOG. Maintain momentum and tension.\n"
         "   - Use rich descriptions for boundaries and wickets.\n"
-        "   - Mention the total score to track progress, but avoid technical terms like 'overs' or 'timestamp'.\n"
+        "   - Mention the total score to track progress (e.g., 'at 25/0' or 'reaching 42/1').\n"
+        "   - **OVERS**: ONLY mention the 'overs' when a wicket falls (e.g., 'the breakthrough came at 4.2 overs'). DO NOT mention overs for boundaries or any other events.\n"
         "4. **Perspective**: Act as an elite commentator (Professional style). Balance the praise for both sides.\n"
         "5. **Closing**: End with a powerful summary of the match result or the current state if it seems unfinished.\n"
-        "6. **Format**: Use 1-2 flowing paragraphs. Do not use bullet points or headings.\n\n"
+        "6. **Format**: Use 1-2 flowing paragraphs. Do not use bullet points or headings. Ensure the text is clean and starts directly with the narrative.\n\n"
         "YOUR BROADCAST REPORT:"
     )
     return prompt
 
 
-# -----------------------------
 # Generate summary using LLM
-# -----------------------------
 def generate_summary(json_file, params=None):
     _slog("=== SUMMARY GENERATION STARTED ===", "STEP")
     if params is None:
@@ -262,9 +255,7 @@ def generate_summary(json_file, params=None):
             "error": str(e)
         }
 
-# -----------------------------
 # Main
-# -----------------------------
 if __name__ == "__main__":
     json_file = "event_analysis/verified_events.json"
     generate_summary(json_file)
