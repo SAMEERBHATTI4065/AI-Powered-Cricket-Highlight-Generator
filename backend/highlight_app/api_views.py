@@ -137,13 +137,13 @@ def upload_video_api(request):
     file_size_mb = video_file.size / (1024 * 1024)
     logging.info(f"UPLOAD: Received file '{video_file.name}' ({file_size_mb:.1f} MB)")
     
-    # --- File Size Limit (10GB) ---
+    # File Size Limit (10GB)
     MAX_UPLOAD_MB = 10240
     if file_size_mb > MAX_UPLOAD_MB:
         logging.error(f"UPLOAD REJECTED: File too large ({file_size_mb:.1f}MB)")
         return JsonResponse({'error': 'File too large'}, status=413)
 
-    # --- Disk Space Check ---
+    # Disk Space Check
     try:
         free_mb = shutil.disk_usage(settings.MEDIA_ROOT).free / (1024 * 1024)
         logging.info(f"DISK: Free space on media root: {free_mb:.1f} MB")
