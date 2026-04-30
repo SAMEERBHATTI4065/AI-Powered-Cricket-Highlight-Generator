@@ -10,6 +10,7 @@ echo "$LOG_START ===== Cricket Highlight Generator Startup =====" | tee -a /app/
 
 # 1. Start Redis
 redis-server --daemonize yes
+sleep 2
 
 # 2. Run Django Migrations (fast check)
 cd /app/backend

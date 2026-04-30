@@ -26,6 +26,8 @@ const Dashboard = () => {
     const [jobId, setJobId] = useState<string | null>(null);
     const [sessionId, setSessionId] = useState<string | null>(null);
     const [error, setError] = useState<any>(null);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [isUploading, setIsUploading] = useState(false);
     const [showCelebration, setShowCelebration] = useState(false);
     const [verifiedCount, setVerifiedCount] = useState(0);
     const [totalEvents, setTotalEvents] = useState(0);
@@ -197,6 +199,8 @@ const Dashboard = () => {
     const handleProcess = async () => {
         if (!file) return;
         setProcessing(true);
+        setIsUploading(true);
+        setUploadProgress(0);
         setProgress(0);
         setActiveStage(0);
         setError(null);
@@ -208,29 +212,56 @@ const Dashboard = () => {
         formData.append('depth', depth);
         formData.append('style', style);
 
-        try {
-            const response = await fetch('/api/upload/', {
-                method: 'POST',
-                body: formData,
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Upload failed');
+        // Using XMLHttpRequest for upload progress
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+                const percent = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(percent);
+                if (percent === 100) {
+                    setLogs(prev => [`[${new Date().toLocaleTimeString()}] SYS: Upload complete. Handing off to AI Engine...`, ...prev]);
+                }
             }
-            const data = await response.json();
-            setJobId(data.job_id);
-            setLogs(prev => [`[${new Date().toLocaleTimeString()}] SYS: Upload successful. Job ID: ${data.job_id}`, ...prev]);
+        });
 
-        } catch (err: any) {
-            console.error("Error:", err);
+        xhr.addEventListener("load", () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                try {
+                    const data = JSON.parse(xhr.responseText);
+                    setJobId(data.job_id);
+                    setIsUploading(false);
+                    setLogs(prev => [`[${new Date().toLocaleTimeString()}] SYS: Task registered. Job ID: ${data.job_id}`, ...prev]);
+                } catch (e) {
+                    handleUploadError("Failed to parse server response.");
+                }
+            } else {
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    handleUploadError(errorData.error || 'Upload failed');
+                } catch (e) {
+                    handleUploadError(`Upload failed with status ${xhr.status}`);
+                }
+            }
+        });
+
+        xhr.addEventListener("error", () => {
+            handleUploadError("Network error occurred during upload.");
+        });
+
+        const handleUploadError = (message: string) => {
+            console.error("Error:", message);
             setError({
-                message: err.message || "An unexpected error occurred during upload.",
+                message: message,
                 stage: "Upload/Initialisation",
-                details: "Check your internet connection or server status."
+                details: "Hugging Face Spaces have a timeout for large uploads. If this fails, try a smaller video clip or a lower resolution."
             });
             setProcessing(false);
-        }
+            setIsUploading(false);
+        };
+
+        xhr.open("POST", "/api/upload/");
+        xhr.send(formData);
     };
 
     return (
@@ -429,14 +460,16 @@ const Dashboard = () => {
 
                                 <div className="text-center z-10">
                                     <motion.span
-                                        key={progress}
+                                        key={isUploading ? uploadProgress : progress}
                                         initial={{ scale: 0.9, opacity: 0.8 }}
                                         animate={{ scale: 1, opacity: 1 }}
                                         className="text-8xl font-black text-white block tracking-tighter"
                                     >
-                                        {Math.round(progress)}%
+                                        {isUploading ? uploadProgress : Math.round(progress)}%
                                     </motion.span>
-                                    <span className="text-xs uppercase tracking-[0.4em] text-primary font-bold">Analysing</span>
+                                    <span className="text-xs uppercase tracking-[0.4em] text-primary font-bold">
+                                        {isUploading ? "Uploading" : "Analysing"}
+                                    </span>
 
                                     {/* Event Count Progress */}
                                     {totalEvents > 0 && (
