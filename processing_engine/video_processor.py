@@ -786,9 +786,6 @@ def generate_highlights(
     else:
         print("⚠️  No verified events found — no highlight video generated.")
 
-    # =========================================================================
-    # GLOBAL CONSISTENCY CHECK (GHOST WICKET REMOVAL)
-    # =========================================================================
     if all_verified_events:
         _log("PHASE 2.7: Performing Global Consistency Check...", "STEP")
         refined_events = []
@@ -821,17 +818,12 @@ def generate_highlights(
             refined_events.append(ev)
         all_verified_events = refined_events
 
-    # =========================================================================
-    # JSON REPORT
-    # =========================================================================
     json_path = os.path.join(output_base, "verified_events.json")
     with open(json_path, "w") as f:
         json.dump(all_verified_events, f, indent=4)
     print(f"\n✅ Verified events saved: {json_path}")
 
-    # =========================================================================
     # SUMMARY GENERATION
-    # =========================================================================
     if progress_callback:
         progress_callback(95, "summary", "Generating AI match report...")
 

@@ -54,7 +54,7 @@ def cleanup_old_sessions(max_age_hours=1):
     except Exception as e:
         print(f"⚠️ Cleanup failed: {e}")
     
-    # --- ALSO CLEANUP /app/temp for Railway/Monolith sharing ---
+    # ALSO CLEANUP /app/temp for Railway/Monolith sharing
     temp_paths = [Path('/app/temp/cricket_results'), Path('/app/temp/cricket_uploads')]
     for temp_base in temp_paths:
         if temp_base.exists():
@@ -112,15 +112,12 @@ def process_view(request):
     request.session['session_id'] = session_id
     request.session['video_filename'] = video_file.name
     
-    print(f"\n{'='*60}")
     print(f"🎬 STARTING VIDEO PROCESSING")
-    print(f"{'='*60}")
     print(f"Session ID: {session_id}")
     print(f"Video file: {video_file.name}")
     print(f"Video size: {video_file.size / (1024*1024):.2f} MB")
     print(f"Upload path: {video_path}")
     print(f"Results dir: {results_dir}")
-    print(f"{'='*60}\n")
     
     # Change to results directory (required by original code)
     original_cwd = os.getcwd()
@@ -145,9 +142,7 @@ def process_view(request):
         os.chdir(original_cwd)
         print(f"\n✅ Restored working directory to: {os.getcwd()}")
     
-    print(f"\n{'='*60}")
     print(f"🎉 PROCESSING COMPLETE - Redirecting to results")
-    print(f"{'='*60}\n")
     
     # Redirect to results page
     return redirect('result', session_id=session_id)

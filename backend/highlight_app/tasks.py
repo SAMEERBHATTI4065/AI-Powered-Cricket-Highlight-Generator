@@ -25,9 +25,7 @@ def process_video_task(self, video_path, session_id, params=None):
     
     # ── TASK START BANNER ──
     task_start = time.time()
-    print(f"\n{'='*65}", flush=True)
     _tlog("CELERY TASK STARTED: process_video_task", "STEP")
-    print(f"{'='*65}", flush=True)
     _tlog(f"Session ID : {session_id}")
     _tlog(f"Video path : {video_path}", "FILE")
     _tlog(f"Parameters : {params}", "DATA")
@@ -136,11 +134,9 @@ def process_video_task(self, video_path, session_id, params=None):
             _tlog(f"Could not remove uploaded video (may already be gone)", "WARN")
 
         task_time = time.time() - task_start
-        print(f"\n{'='*65}", flush=True)
         _tlog(f"CELERY TASK COMPLETE in {task_time:.1f}s ({task_time/60:.1f} min)", "DONE")
         _tlog(f"Session: {session_id}", "DATA")
         _tlog(f"Events: {len(verified_events)}, Video: {final_video_name}", "DATA")
-        print(f"{'='*65}\n", flush=True)
 
         # Update Celery progress to 100% before finishing
         self.update_state(state='PROGRESS', meta={
