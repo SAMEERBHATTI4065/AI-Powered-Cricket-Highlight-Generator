@@ -21,12 +21,22 @@ cd /app
 export PYTHONPATH=/app/backend:/app:$PYTHONPATH
 
 # 3. Start Celery Worker
-echo "Starting Celery worker..." | tee -a /app/logs/startup.log
+echo "Starting Celery worker (concurrency optimized)..." | tee -a /app/logs/startup.log
 cd /app/backend
-celery -A cricket_highlights worker --loglevel=info --concurrency=1 2>&1 | tee -a /app/logs/worker.log &
+# Use concurrency=1 on limited CPU (HF) to ensure stability, or 2 on larger machines
+CELERY_CONCURRENCY=${CELERY_CONCURRENCY:-1}
+celery -A cricket_highlights worker --loglevel=info --concurrency=$CELERY_CONCURRENCY 2>&1 | tee -a /app/logs/worker.log &
 cd /app
 
-# 4. Start Django Server
-echo "Starting Django server on port ${PORT:-7860}..." | tee -a /app/logs/startup.log
+# 4. Start Gunicorn Server (Production grade)
+echo "Starting Gunicorn server on port ${PORT:-7860}..." | tee -a /app/logs/startup.log
 cd /app/backend
-python manage.py runserver 0.0.0.0:${PORT:-7860} 2>&1 | tee -a /app/logs/backend.log
+# Use 2 workers for 2 vCPUs (standard for HF Spaces)
+gunicorn cricket_highlights.wsgi:application \
+    --bind 0.0.0.0:${PORT:-7860} \
+    --workers 2 \
+    --worker-class uvicorn.workers.UvicornWorker \
+    --timeout 600 \
+    --access-logfile /app/logs/gunicorn_access.log \
+    --error-logfile /app/logs/gunicorn_error.log \
+    2>&1 | tee -a /app/logs/backend.log

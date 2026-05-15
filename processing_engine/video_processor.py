@@ -500,8 +500,14 @@ def generate_highlights(
                 os.remove(temp_audio)
         return chunk_num, candidates
 
-    # Determine number of workers (max 4 to avoid memory spikes on Hugging Face)
-    max_workers = min(len(chunks), 4)
+    # Determine number of workers
+    # On Hugging Face, we typically have 2 vCPUs. On localhost, we might have more.
+    # Capping at 4 to prevent memory issues, but using at least 2 if available.
+    cpu_count = os.cpu_count() or 2
+    max_workers = min(len(chunks), cpu_count, 4)
+    
+    _log(f"Using {max_workers} workers for parallel scanning (Detected CPUs: {cpu_count})", "DATA")
+    
     completed_chunks = 0
     
     with ThreadPoolExecutor(max_workers=max_workers) as executor:

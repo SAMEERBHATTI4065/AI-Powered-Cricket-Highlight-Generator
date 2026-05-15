@@ -35,11 +35,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Pre-download EasyOCR models into a persistent location
 RUN python -c "import easyocr; reader = easyocr.Reader(['en'], gpu=False)"
 
-# Copy all project files
-COPY . .
+# Copy backend and processing engine first for better layer caching
+COPY backend/ /app/backend/
+COPY processing_engine/ /app/processing_engine/
+COPY start.sh /app/start.sh
 
 # Copy built frontend from Stage 1
-COPY --from=frontend-builder /app/backend/static/react ./backend/static/react
+COPY --from=frontend-builder /app/backend/static/react /app/backend/static/react
 
 # Create necessary folders and set permissions
 RUN mkdir -p /app/logs /app/media/uploads /app/media/results /app/temp /app/backend/staticfiles
