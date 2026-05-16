@@ -37,6 +37,7 @@ gunicorn cricket_highlights.wsgi:application \
     --workers 2 \
     --worker-class uvicorn.workers.UvicornWorker \
     --timeout 600 \
-    --access-logfile /app/logs/gunicorn_access.log \
-    --error-logfile /app/logs/gunicorn_error.log \
-    2>&1 | tee -a /app/logs/backend.log
+    --access-logfile - \
+    --error-logfile - \
+    --log-level debug
+
