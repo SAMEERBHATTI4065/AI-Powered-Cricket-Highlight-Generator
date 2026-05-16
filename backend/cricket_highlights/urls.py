@@ -15,6 +15,7 @@ urlpatterns = [
     path('logs/', app_views.logs_list_view, name='logs_list'),
     path('logs/<path:file_path>/', app_views.logs_view, name='logs_view'),
     path('s/<str:token>/', api_views.redirect_share_api, name='share_redirect'),
+    path('health/', lambda r: HttpResponse("OK"), name='health_check'),
 ]
 
 # Serve static/media files ONLY if they haven't been matched by index.html catch-all

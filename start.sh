@@ -1,43 +1,21 @@
 #!/bin/bash
-set -e
+set -x
 
 # Ensure folders exist
 mkdir -p /app/logs /app/media/uploads /app/media/results
 chmod -R 777 /app/media /app/logs
 
-LOG_START="[$(date -u '+%Y-%m-%d %H:%M:%S')]"
-echo "$LOG_START ===== Cricket Highlight Generator Startup =====" | tee -a /app/logs/startup.log
-
 # 1. Start Redis
 redis-server --daemonize yes
-sleep 2
 
-# 2. Run Django Migrations (fast check)
+# 2. Run Migrations
 cd /app/backend
-python manage.py migrate --noinput 2>&1 | tee -a /app/logs/startup.log
-cd /app
+python manage.py migrate --noinput
 
-# PYTHONPATH is set in Dockerfile, but ensuring /app is included
-export PYTHONPATH=/app/backend:/app:$PYTHONPATH
+# 3. Start Celery Worker (background)
+echo "Starting Celery worker..."
+celery -A cricket_highlights worker --loglevel=info --concurrency=1 > /app/logs/worker.log 2>&1 &
 
-# 3. Start Celery Worker
-echo "Starting Celery worker (concurrency optimized)..." | tee -a /app/logs/startup.log
-cd /app/backend
-# Use concurrency=1 on limited CPU (HF) to ensure stability, or 2 on larger machines
-CELERY_CONCURRENCY=${CELERY_CONCURRENCY:-1}
-celery -A cricket_highlights worker --loglevel=info --concurrency=$CELERY_CONCURRENCY 2>&1 | tee -a /app/logs/worker.log &
-cd /app
-
-# 4. Start Gunicorn Server (Production grade)
-echo "Starting Gunicorn server on port ${PORT:-7860}..." | tee -a /app/logs/startup.log
-cd /app/backend
-# Use 2 workers for 2 vCPUs (standard for HF Spaces)
-gunicorn cricket_highlights.wsgi:application \
-    --bind 0.0.0.0:${PORT:-7860} \
-    --workers 2 \
-    --worker-class uvicorn.workers.UvicornWorker \
-    --timeout 600 \
-    --access-logfile - \
-    --error-logfile - \
-    --log-level debug
-
+# 4. Start Django (using runserver for debugging)
+echo "Starting Django on port ${PORT:-7860}..."
+python manage.py runserver 0.0.0.0:${PORT:-7860}
