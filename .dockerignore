@@ -26,6 +26,7 @@ results/
 event_analysis/
 uploads/
 *.mp4
+!backend/static/demo/*.mp4
 *.avi
 *.mkv
 
