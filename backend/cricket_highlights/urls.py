@@ -4,6 +4,7 @@ URL configuration for cricket_highlights project.
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
+from django.http import HttpResponse
 from highlight_app import api_views, views as app_views
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
