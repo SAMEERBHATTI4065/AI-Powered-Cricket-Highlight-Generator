@@ -27,31 +27,39 @@ def get_openai_client():
     if client is not None:
         return client
     
-    # Try loading from .env
-    _slog("Loading OpenAI API key from .env...", "AI")
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
+    # First try environment variable directly (Hugging Face Secrets inject here)
+    api_key = os.environ.get("OPENAI_API_KEY")
     
     if not api_key:
-        # Check if we are in a results directory and try to find .env in parent
-        parent_env = os.path.join("..", "..", ".env")
-        if os.path.exists(parent_env):
-            _slog("Trying parent directory .env...", "AI")
-            load_dotenv(parent_env)
-            api_key = os.getenv("OPENAI_API_KEY")
+        # Fallback: try loading from .env file
+        _slog("OPENAI_API_KEY not in env, trying .env file...", "AI")
+        load_dotenv()
+        api_key = os.getenv("OPENAI_API_KEY")
+    
+    if not api_key:
+        # Last resort: check parent directories for .env
+        for parent in ["..", os.path.join("..", ".."), os.path.join("..", "..", "backend")]:
+            parent_env = os.path.join(parent, ".env")
+            if os.path.exists(parent_env):
+                _slog(f"Trying .env at: {parent_env}", "AI")
+                load_dotenv(parent_env)
+                api_key = os.getenv("OPENAI_API_KEY")
+                if api_key:
+                    break
 
     if not api_key:
-        _slog("OPENAI_API_KEY not found in environment!", "WARN")
+        _slog("OPENAI_API_KEY not found anywhere! Summary generation will be skipped.", "WARN")
         return None
     
     try:
-        _slog(f"Initializing OpenAI client (key: ...{api_key[-4:]})", "AI")
+        _slog(f"Initializing OpenAI client (key ends: ...{api_key[-4:]})", "AI")
         client = OpenAI(api_key=api_key)
         _slog("OpenAI client initialized successfully", "OK")
         return client
     except Exception as e:
         _slog(f"Error initializing OpenAI client: {e}", "ERR")
         return None
+
 
 # Initialize early if possible, but don't fail import
 get_openai_client()
