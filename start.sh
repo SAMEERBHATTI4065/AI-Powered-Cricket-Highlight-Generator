@@ -49,7 +49,7 @@ echo "--- END DIAGNOSTICS ---"
 cd /app/backend
 gunicorn cricket_highlights.wsgi:application \
     --bind 0.0.0.0:${PORT:-7860} \
-    --workers 2 \
+    --workers 1 \
     --threads 4 \
     --worker-class gthread \
     --timeout 600 \
