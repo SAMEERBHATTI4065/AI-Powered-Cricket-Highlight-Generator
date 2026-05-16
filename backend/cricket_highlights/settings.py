@@ -107,6 +107,7 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATICFILES_DIRS = [
     BASE_DIR / "static" / "react",
+    BASE_DIR / "static" / "demo",
 ]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 

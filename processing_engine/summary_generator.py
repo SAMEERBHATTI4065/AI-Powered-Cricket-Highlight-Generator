@@ -28,7 +28,7 @@ def get_openai_client():
         return client
     
     # First: check system environment variables directly (HF Secrets live here)
-    api_key = os.environ.get("OPENAI_API_KEY")
+    api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("OPEN_API_KEY")
     
     if not api_key:
         # Fallback: try loading from .env file
@@ -43,7 +43,7 @@ def get_openai_client():
             if os.path.exists(parent_env):
                 _slog(f"Trying .env at: {parent_env}", "AI")
                 load_dotenv(parent_env)
-                api_key = os.getenv("OPENAI_API_KEY")
+                api_key = os.getenv("OPENAI_API_KEY") or os.getenv("OPEN_API_KEY")
                 if api_key:
                     break
 
@@ -258,6 +258,16 @@ def generate_summary(json_file, params=None):
         }
     except Exception as e:
         _slog(f"Error generating summary: {e}", "ERR")
+        # WRITE ERROR TO FILE SO IT SHOWS IN UI
+        try:
+            output_dir = os.path.dirname(json_file)
+            output_path = os.path.join(output_dir, "Final_summary.txt")
+            error_msg = f"AI Summary Generation Failed.\n\nError details:\n{str(e)}\n\nPlease check your OpenAI API key and quota."
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(error_msg)
+        except:
+            pass
+            
         return {
             "success": False,
             "error": str(e)
