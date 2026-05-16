@@ -123,14 +123,11 @@ def upload_video_api(request):
         results_dir.mkdir(parents=True, exist_ok=True)
         
     except Exception as e:
-        logging.error(f"Storage error: {str(e)}")
+        logger.error(f"STORAGE ERROR: {str(e)}", exc_info=True)
         return JsonResponse({
             'error': "Server storage configuration error",
-            'details': f"The storage path is currently inaccessible. Error: {str(e)}",
-            'troubleshooting': [
-                "Restart the Docker containers using 'docker compose up -d' in the docker directory.",
-                "Ensure Docker Desktop has permission to access the local drives."
-            ]
+            'details': f"Storage initialization failed. This often happens if the media directory is not writable or doesn't exist. Error: {str(e)}",
+            'path_attempted': str(settings.MEDIA_ROOT)
         }, status=500)
     
     video_file = request.FILES['video']
@@ -151,7 +148,7 @@ def upload_video_api(request):
             logging.error("UPLOAD REJECTED: Insufficient disk space")
             return JsonResponse({'error': 'Insufficient storage'}, status=507)
     except Exception as e:
-        logging.warning(f"Disk check failed: {e}")
+        logger.warning(f"Disk check skipped or failed: {e}")
         
     processing_params = {
         'format': request.POST.get('format', 'MP4'),
@@ -173,8 +170,11 @@ def upload_video_api(request):
                 destination.write(chunk)
         logging.info("FILE: Video saved successfully")
     except Exception as e:
-        logging.error(f"FILE ERROR: {e}")
-        return JsonResponse({'error': f"Failed to save video: {e}"}, status=500)
+        logger.error(f"FILE SAVE ERROR for {video_filename}: {e}", exc_info=True)
+        return JsonResponse({
+            'error': f"Failed to save video file",
+            'details': str(e)
+        }, status=500)
             
     # Trigger process task asynchronously
     try:
@@ -190,8 +190,11 @@ def upload_video_api(request):
         })
         
     except Exception as e:
-        logging.error(f"CELERY ERROR: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        logger.error(f"CELERY TRIGGER ERROR: {e}", exc_info=True)
+        return JsonResponse({
+            'error': "Failed to start processing task",
+            'details': str(e)
+        }, status=500)
 
 def get_status_api(request, job_id):
     try:

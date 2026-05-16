@@ -15,9 +15,10 @@ import time
 from datetime import datetime
 
 # Configure logging
+log_dir = "/app/logs" if os.path.exists("/app/logs") else "."
 logging.basicConfig(
-    filename="processing.log",
-    level=logging.DEBUG,
+    filename=os.path.join(log_dir, "processing.log"),
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
     encoding="utf-8",
 )

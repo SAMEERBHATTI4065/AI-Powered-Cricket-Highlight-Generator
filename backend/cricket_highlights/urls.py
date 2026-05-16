@@ -20,8 +20,7 @@ urlpatterns = [
 # Serve static/media files ONLY if they haven't been matched by index.html catch-all
 # Actually, order matters. Static should come BEFORE catch-all.
 if settings.DEBUG:
-    for static_dir in settings.STATICFILES_DIRS:
-        urlpatterns += static(settings.STATIC_URL, document_root=static_dir)
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # FINAL CATCH-ALL for React

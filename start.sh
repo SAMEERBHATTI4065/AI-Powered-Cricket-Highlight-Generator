@@ -8,6 +8,15 @@ chmod -R 777 /app/media /app/logs
 LOG_START="[$(date -u '+%Y-%m-%d %H:%M:%S')]"
 echo "$LOG_START ===== Cricket Highlight Generator Startup =====" | tee -a /app/logs/startup.log
 
+# Diagnostic: Check OpenAI Key
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo "$LOG_START ⚠️  WARN: OPENAI_API_KEY is not set. Summary generation will use fallback text." | tee -a /app/logs/startup.log
+else
+    # Show only the last 4 characters of the key for security
+    MASKED_KEY="...${OPENAI_API_KEY: -4}"
+    echo "$LOG_START ✅ INFO: OPENAI_API_KEY is present ($MASKED_KEY). AI Summaries enabled." | tee -a /app/logs/startup.log
+fi
+
 # 1. Start Redis
 redis-server --daemonize yes
 sleep 2
