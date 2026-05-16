@@ -4,7 +4,6 @@ URL configuration for cricket_highlights project.
 from django.contrib import admin
 from django.urls import path, include, re_path
 from django.conf import settings
-from django.http import HttpResponse
 from highlight_app import api_views, views as app_views
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
@@ -16,13 +15,13 @@ urlpatterns = [
     path('logs/', app_views.logs_list_view, name='logs_list'),
     path('logs/<path:file_path>/', app_views.logs_view, name='logs_view'),
     path('s/<str:token>/', api_views.redirect_share_api, name='share_redirect'),
-    path('health/', lambda r: HttpResponse("OK"), name='health_check'),
 ]
 
 # Serve static/media files ONLY if they haven't been matched by index.html catch-all
 # Actually, order matters. Static should come BEFORE catch-all.
 if settings.DEBUG:
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])
+    for static_dir in settings.STATICFILES_DIRS:
+        urlpatterns += static(settings.STATIC_URL, document_root=static_dir)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # FINAL CATCH-ALL for React

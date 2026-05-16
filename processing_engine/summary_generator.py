@@ -27,39 +27,31 @@ def get_openai_client():
     if client is not None:
         return client
     
-    # First: check system environment variables directly (HF Secrets live here)
-    api_key = os.environ.get("OPENAI_API_KEY") or os.environ.get("OPEN_API_KEY")
+    # Try loading from .env
+    _slog("Loading OpenAI API key from .env...", "AI")
+    load_dotenv()
+    api_key = os.getenv("OPENAI_API_KEY")
     
     if not api_key:
-        # Fallback: try loading from .env file
-        _slog("OPENAI_API_KEY not in env, trying .env file...", "AI")
-        load_dotenv()
-        api_key = os.getenv("OPENAI_API_KEY")
-    
-    if not api_key:
-        # Last resort: search parent directories for .env
-        for parent in ["..", os.path.join("..", ".."), os.path.join("..", "..", "backend")]:
-            parent_env = os.path.join(parent, ".env")
-            if os.path.exists(parent_env):
-                _slog(f"Trying .env at: {parent_env}", "AI")
-                load_dotenv(parent_env)
-                api_key = os.getenv("OPENAI_API_KEY") or os.getenv("OPEN_API_KEY")
-                if api_key:
-                    break
+        # Check if we are in a results directory and try to find .env in parent
+        parent_env = os.path.join("..", "..", ".env")
+        if os.path.exists(parent_env):
+            _slog("Trying parent directory .env...", "AI")
+            load_dotenv(parent_env)
+            api_key = os.getenv("OPENAI_API_KEY")
 
     if not api_key:
-        _slog("OPENAI_API_KEY not found anywhere! Summary will be skipped.", "WARN")
+        _slog("OPENAI_API_KEY not found in environment!", "WARN")
         return None
     
     try:
-        _slog(f"Initializing OpenAI client (key ends: ...{api_key[-4:]})", "AI")
+        _slog(f"Initializing OpenAI client (key: ...{api_key[-4:]})", "AI")
         client = OpenAI(api_key=api_key)
         _slog("OpenAI client initialized successfully", "OK")
         return client
     except Exception as e:
         _slog(f"Error initializing OpenAI client: {e}", "ERR")
         return None
-
 
 # Initialize early if possible, but don't fail import
 get_openai_client()
@@ -258,16 +250,6 @@ def generate_summary(json_file, params=None):
         }
     except Exception as e:
         _slog(f"Error generating summary: {e}", "ERR")
-        # WRITE ERROR TO FILE SO IT SHOWS IN UI
-        try:
-            output_dir = os.path.dirname(json_file)
-            output_path = os.path.join(output_dir, "Final_summary.txt")
-            error_msg = f"AI Summary Generation Failed.\n\nError details:\n{str(e)}\n\nPlease check your OpenAI API key and quota."
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(error_msg)
-        except:
-            pass
-            
         return {
             "success": False,
             "error": str(e)
