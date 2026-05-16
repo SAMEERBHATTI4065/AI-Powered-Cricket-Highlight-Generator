@@ -50,7 +50,8 @@ cd /app/backend
 gunicorn cricket_highlights.wsgi:application \
     --bind 0.0.0.0:${PORT:-7860} \
     --workers 2 \
-    --worker-class uvicorn.workers.UvicornWorker \
+    --threads 4 \
+    --worker-class gthread \
     --timeout 600 \
     --access-logfile - \
     --error-logfile - \
