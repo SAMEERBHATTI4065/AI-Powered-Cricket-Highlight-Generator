@@ -32,7 +32,7 @@ const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HT
         <div className="relative w-full h-full bg-black">
             <video
                 ref={videoRef}
-                src="/static/demo/demo-video.mp4"
+                src="/static/demo/FINAL INDIA VS PAKISTAN 2017 CHAMPIONS TROPHY HIGHLIGHTS 1080p Hd - Ashfaq Cricket 56 (720p, h264).mp4"
                 className="absolute inset-0 w-full h-full object-cover"
                 autoPlay
                 muted
