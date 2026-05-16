@@ -40,13 +40,18 @@ cd /app
 
 # 4. Start Gunicorn Server (Production grade)
 echo "Starting Gunicorn server on port ${PORT:-7860}..." | tee -a /app/logs/startup.log
+
+# Show the startup logs collected so far to stdout
+echo "--- STARTUP DIAGNOSTICS ---"
+cat /app/logs/startup.log
+echo "--- END DIAGNOSTICS ---"
+
 cd /app/backend
-# Use 2 workers for 2 vCPUs (standard for HF Spaces)
 gunicorn cricket_highlights.wsgi:application \
     --bind 0.0.0.0:${PORT:-7860} \
     --workers 2 \
     --worker-class uvicorn.workers.UvicornWorker \
     --timeout 600 \
-    --access-logfile /app/logs/gunicorn_access.log \
-    --error-logfile /app/logs/gunicorn_error.log \
+    --access-logfile - \
+    --error-logfile - \
     2>&1 | tee -a /app/logs/backend.log
