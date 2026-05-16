@@ -7,10 +7,6 @@ from django.conf import settings
 from highlight_app import api_views, views as app_views
 from django.conf.urls.static import static
 from django.views.generic import TemplateView
-from django.http import JsonResponse
-
-def health_check(request):
-    return JsonResponse({"status": "ok", "environment": "Hugging Face" if os.environ.get("SPACE_ID") else "local"})
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -19,7 +15,6 @@ urlpatterns = [
     path('logs/', app_views.logs_list_view, name='logs_list'),
     path('logs/<path:file_path>/', app_views.logs_view, name='logs_view'),
     path('s/<str:token>/', api_views.redirect_share_api, name='share_redirect'),
-    path('health/', health_check, name='health_check'),
 ]
 
 # Serve static/media files ONLY if they haven't been matched by index.html catch-all

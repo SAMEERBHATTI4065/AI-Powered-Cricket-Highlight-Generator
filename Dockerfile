@@ -27,15 +27,13 @@ ENV PYTHONUNBUFFERED 1
 ENV PORT 7860
 ENV PYTHONPATH=/app/backend:/app
 ENV HOME=/app
-ENV MPLCONFIGDIR=/tmp/matplotlib
-ENV EASYOCR_MODULE_PATH=/app/.EasyOCR
 
 # Install Python requirements
 COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Pre-download EasyOCR models into a persistent location
-RUN python -c "import os; import easyocr; reader = easyocr.Reader(['en'], gpu=False, model_storage_directory=os.environ.get('EASYOCR_MODULE_PATH'))"
+RUN python -c "import easyocr; reader = easyocr.Reader(['en'], gpu=False)"
 
 # Copy backend and processing engine first for better layer caching
 COPY backend/ /app/backend/
