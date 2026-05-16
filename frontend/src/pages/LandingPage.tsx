@@ -30,16 +30,13 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
 const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HTMLVideoElement>, onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void }) => {
     return (
         <div className="relative w-full h-full bg-black">
-            <video
-                ref={videoRef}
-                src="/static/demo-video.mp4"
-                className="absolute inset-0 w-full h-full object-cover"
-                autoPlay
-                muted
-                loop
-                playsInline
-                onTimeUpdate={onTimeUpdate}
-                onLoadedMetadata={(e) => (e.currentTarget.muted = true)}
+            <iframe
+                src="https://www.youtube.com/embed/iq8qGwMbsM0?autoplay=1&mute=1&loop=1&playlist=iq8qGwMbsM0&controls=0&modestbranding=1&rel=0"
+                className="absolute inset-0 w-full h-full"
+                allow="autoplay; encrypted-media"
+                allowFullScreen
+                title="Cricket Highlights Demo"
+                style={{ border: 'none' }}
             />
             
             {/* High-Tech Overlay to maintain the vibe */}
@@ -71,6 +68,7 @@ const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HT
         </div>
     );
 };
+
 
 const LandingPage = () => {
     const containerRef = useRef(null);
