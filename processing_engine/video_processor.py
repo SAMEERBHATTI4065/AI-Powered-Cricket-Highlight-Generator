@@ -218,13 +218,18 @@ def get_score_from_image_ai(img_path, is_verified=False):
         return None
 
     img_res = cv2.resize(img, None, fx=1.3, fy=1.3, interpolation=cv2.INTER_LINEAR)
-    results = ocr_reader.readtext(img_res)
+    
+    # ⚡ Speed Optimization: Narrow down character set to speed up EasyOCR CPU decoding
+    results = ocr_reader.readtext(
+        img_res,
+        allowlist="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz -/().*@_+[]|"
+    )
     full_text = " ".join([text for (_, text, _) in results])
     confidence = np.mean([c for (_, _, c) in results]) if results else 0.0
 
-    clean_text = None
+    # ⚡ Always clean text to allow caching and avoid duplicate OCR requests
+    clean_text = clean_scoreboard_text(full_text)
     if is_verified:
-        clean_text = clean_scoreboard_text(full_text)
         print(f"    [CLEANED DATA]: {clean_text}")
         logging.info(f"[CLEANED DATA]: {clean_text}")
     else:
@@ -595,10 +600,9 @@ def generate_highlights(
                     return fb_key, fb_data
             return base_key, data
 
-        # Resolve S1, S2, S3
+        # Resolve S1 and S2 (eagerly)
         s1_key, s1_data = get_valid_ss("S1", abs_ts - 19, [("S4", -29), ("S5", -39)])
         s2_key, s2_data = get_valid_ss("S2", abs_ts, [("S4", -5)])
-        s3_key, s3_data = get_valid_ss("S3", abs_ts + 16, [("S4", 26), ("S5", 36)])
 
         # Compare and Verify
         def compare_pair(k1, d1, k2, d2, label=""):
@@ -628,19 +632,49 @@ def generate_highlights(
         verified = False
         event_type = None
         prev_data = curr_data = prev_key_final = curr_key_final = None
+        
+        s3_resolved = False
+        s3_key, s3_data = None, None
 
-        comparisons = [
-            (s1_key, s1_data, s2_key, s2_data),
-            (s1_key, s1_data, s3_key, s3_data),
-            (s2_key, s2_data, s3_key, s3_data),
-        ]
-        for k1, d1, k2, d2 in comparisons:
-            e_type, conf = compare_pair(k1, d1, k2, d2, label=f"{k1}-{k2}")
+        # ⚡ Lazy Loading for S3: Only fetch and OCR S3 if S1-S2 fails to verify OR if we need it for Wicket checks
+        def get_s3_lazily():
+            nonlocal s3_resolved, s3_key, s3_data
+            if not s3_resolved:
+                print("    🔍 Lazily resolving S3 screenshot...")
+                s3_key, s3_data = get_valid_ss("S3", abs_ts + 16, [("S4", 26), ("S5", 36)])
+                s3_resolved = True
+            return s3_key, s3_data
+
+        # Step 1: Compare S1 and S2 first
+        e_type, conf = compare_pair(s1_key, s1_data, s2_key, s2_data, label="S1-S2")
+        if e_type:
+            verified, event_type = True, e_type
+            prev_data, curr_data = s1_data, s2_data
+            prev_key_final, curr_key_final = s1_key, s2_key
+            print(f"    ⚡ Early verified {event_type} using S1 & S2")
+            
+            # If it's a wicket, we still lazily load S3 to perform the ghost wicket check
+            if event_type == "WICKET":
+                get_s3_lazily()
+        else:
+            # Step 2: S1-S2 failed or is unreadable. Lazily load S3 to try fallback pairs.
+            s3_k, s3_d = get_s3_lazily()
+            
+            # Compare S1-S3
+            e_type, conf = compare_pair(s1_key, s1_data, s3_k, s3_d, label="S1-S3")
             if e_type:
                 verified, event_type = True, e_type
-                prev_data, curr_data = d1, d2
-                prev_key_final, curr_key_final = k1, k2
-                break
+                prev_data, curr_data = s1_data, s3_d
+                prev_key_final, curr_key_final = s1_key, s3_k
+                print(f"    ⚡ Verified {event_type} using S1 & S3")
+            else:
+                # Compare S2-S3
+                e_type, conf = compare_pair(s2_key, s2_data, s3_k, s3_d, label="S2-S3")
+                if e_type:
+                    verified, event_type = True, e_type
+                    prev_data, curr_data = s2_data, s3_d
+                    prev_key_final, curr_key_final = s2_key, s3_k
+                    print(f"    ⚡ Verified {event_type} using S2 & S3")
 
         if verified:
             wk_change = (curr_data.get("wicket", 0) or 0) > (
@@ -650,7 +684,7 @@ def generate_highlights(
             # --- GHOST WICKET / REVERTED DECISION CHECK ---
             # If we found a wicket, but a later screenshot (S3) shows fewer wickets than our 'current' detection,
             # then the umpire likely overturned the decision.
-            if event_type == "WICKET" and is_readable(s3_data):
+            if event_type == "WICKET" and s3_resolved and is_readable(s3_data):
                 if s3_data.get("wicket", 0) < curr_data.get("wicket", 0):
                     print(f"    🚫 GHOST WICKET DETECTED: Decision likely overturned (Scoreboard: {curr_data['wicket']} -> {s3_data['wicket']})")
                     verified = False
@@ -662,18 +696,16 @@ def generate_highlights(
                         f"    ⏭️  DUPLICATE transition {prev_data['score']}→{curr_data['score']} already captured"
                     )
                     verified = False
-
+ 
         if verified:
             verified_score_transitions.add(transition_key)
             last_clip_end_time = abs_ts + 16
             print(f"    ✨ VERIFIED: {event_type}")
 
-            d1_clean = get_score_from_image_ai(
-                os.path.join(event_dir, f"{prev_key_final}.jpg"), is_verified=True
-            )
-            d2_clean = get_score_from_image_ai(
-                os.path.join(event_dir, f"{curr_key_final}.jpg"), is_verified=True
-            )
+            # ⚡ Cache optimization: Use already computed OCR results from scores dict 
+            # instead of calling get_score_from_image_ai again on disk!
+            d1_clean = scores[prev_key_final]
+            d2_clean = scores[curr_key_final]
 
             def format_score(data, raw):
                 over = "0.0"
