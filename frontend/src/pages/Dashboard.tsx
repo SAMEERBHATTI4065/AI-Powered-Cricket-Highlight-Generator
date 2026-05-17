@@ -111,73 +111,126 @@ const Dashboard = () => {
         return () => clearInterval(hb);
     }, [processing]);
 
-    // Polling logic for real-time progress
+    // Adaptive polling refs — kept outside state to avoid re-renders
+    const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+    const lastProgressRef = useRef<number>(-1);
+    const stagnantCountRef = useRef<number>(0);
+    const currentDelayRef = useRef<number>(5000); // start at 5s
+
+    const POLL_MIN_MS = 5000;   // 5s  — fastest poll
+    const POLL_MAX_MS = 30000;  // 30s — slowest poll (when nothing changes)
+    const STAGNANT_THRESHOLD = 3; // polls with no change before backing off
+
+    // Polling logic with adaptive exponential backoff
     useEffect(() => {
-        let interval: NodeJS.Timeout;
-        if (processing && jobId && progress < 100) {
-            // Initial fetch to get immediate state
-            const fetchStatus = async () => {
-                try {
-                    const response = await fetch(`/api/status/${jobId}/`);
-                    const data = await response.json();
+        if (!processing || !jobId || progress >= 100) return;
 
-                    if (data.state === 'PROGRESS' || data.state === 'SUCCESS') {
-                        setProgress(data.progress ?? progress);
-                        if (data.stage) setActiveStage(stageMap[data.stage] ?? activeStage);
-                        if (data.eta_seconds) setEta(data.eta_seconds);
-                        if (data.frames_processed) setFrames({ processed: data.frames_processed, total: data.total_frames });
+        const fetchStatus = async () => {
+            try {
+                const response = await fetch(`/api/status/${jobId}/`);
+                const data = await response.json();
 
-                        // Event counts for live progress display
-                        if (data.verified_events !== undefined) setVerifiedCount(data.verified_events);
-                        if (data.total_events !== undefined) setTotalEvents(data.total_events);
+                if (data.state === 'PROGRESS' || data.state === 'SUCCESS') {
+                    const newProgress = data.progress ?? progress;
 
-                        // Live detected events
-                        if (data.events && Array.isArray(data.events)) {
-                            const mappedEvents = data.events.map((e: any) => ({
-                                type: e.event_type,
-                                time: `${Math.floor(e.timestamp / 60)}:${String(Math.floor(e.timestamp % 60)).padStart(2, '0')}`,
-                                icon: e.event_type?.toUpperCase() === 'WICKET' ? '☝️' :
-                                    e.event_type?.toUpperCase() === 'SIX' ? '🚀' :
-                                        e.event_type?.toUpperCase() === 'FOUR' ? '🏏' : '✨'
-                            }));
-                            setDetectedEvents(mappedEvents);
+                    // --- Adaptive backoff logic ---
+                    if (newProgress !== lastProgressRef.current) {
+                        // Progress changed → reset to fast polling
+                        stagnantCountRef.current = 0;
+                        currentDelayRef.current = POLL_MIN_MS;
+                        lastProgressRef.current = newProgress;
+                    } else {
+                        // No change → count up stagnant polls
+                        stagnantCountRef.current += 1;
+                        if (stagnantCountRef.current >= STAGNANT_THRESHOLD) {
+                            // Double the interval, capped at POLL_MAX_MS
+                            currentDelayRef.current = Math.min(
+                                currentDelayRef.current * 2,
+                                POLL_MAX_MS
+                            );
+                            stagnantCountRef.current = 0; // reset counter
                         }
+                    }
 
-                        if (data.status) {
-                            const logMsg = `[${new Date().toLocaleTimeString()}] ${data.stage_label || 'SYS'}: ${data.status}`;
-                            setLogs(prev => {
-                                // Prevent duplicate logs from polling
-                                if (prev.length > 0 && prev[prev.length - 1].includes(data.status)) return prev;
-                                return [...prev.slice(-30), logMsg];
-                            });
-                        }
+                    // Reschedule with (possibly new) delay
+                    if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+                    if (newProgress < 100) {
+                        pollIntervalRef.current = setTimeout(fetchStatus, currentDelayRef.current);
+                    }
 
-                        if (data.session_id) setSessionId(data.session_id);
+                    // Update state
+                    setProgress(newProgress);
+                    if (data.stage) setActiveStage(stageMap[data.stage] ?? activeStage);
+                    if (data.eta_seconds) setEta(data.eta_seconds);
+                    if (data.frames_processed) setFrames({ processed: data.frames_processed, total: data.total_frames });
+                    if (data.verified_events !== undefined) setVerifiedCount(data.verified_events);
+                    if (data.total_events !== undefined) setTotalEvents(data.total_events);
 
-                        if (data.progress === 100) {
-                            clearInterval(interval);
-                            handleSuccess(data.session_id || sessionId || "");
-                        }
-                    } else if (data.state === 'FAILURE') {
-                        clearInterval(interval);
-                        setProcessing(false);
-                        setError({
-                            message: data.status || "Processing failed at a critical stage.",
-                            stage: data.stage_label || "Backend Engine",
-                            details: "The engine encountered an error. This usually happens if the video quality is too low or a resource limit was reached.",
-                            input: file?.name
+                    // Live detected events
+                    if (data.events && Array.isArray(data.events)) {
+                        const mappedEvents = data.events.map((e: any) => ({
+                            type: e.event_type,
+                            time: `${Math.floor(e.timestamp / 60)}:${String(Math.floor(e.timestamp % 60)).padStart(2, '0')}`,
+                            icon: e.event_type?.toUpperCase() === 'WICKET' ? '☝️' :
+                                e.event_type?.toUpperCase() === 'SIX' ? '🚀' :
+                                    e.event_type?.toUpperCase() === 'FOUR' ? '🏏' : '✨'
+                        }));
+                        setDetectedEvents(mappedEvents);
+                    }
+
+                    if (data.status) {
+                        const logMsg = `[${new Date().toLocaleTimeString()}] ${data.stage_label || 'SYS'}: ${data.status}`;
+                        setLogs(prev => {
+                            if (prev.length > 0 && prev[prev.length - 1].includes(data.status)) return prev;
+                            return [...prev.slice(-30), logMsg];
                         });
                     }
-                } catch (err) {
-                    console.error("Polling error:", err);
-                }
-            };
 
-            fetchStatus();
-            interval = setInterval(fetchStatus, 10000); // Increased polling to 10 seconds to reduce load
-        }
-        return () => clearInterval(interval);
-    }, [processing, jobId, progress]);
+                    if (data.session_id) setSessionId(data.session_id);
+
+                    if (data.progress === 100) {
+                        if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+                        handleSuccess(data.session_id || sessionId || "");
+                    }
+
+                } else if (data.state === 'FAILURE') {
+                    if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+                    setProcessing(false);
+                    setError({
+                        message: data.status || "Processing failed at a critical stage.",
+                        stage: data.stage_label || "Backend Engine",
+                        details: "The engine encountered an error. This usually happens if the video quality is too low or a resource limit was reached.",
+                        input: file?.name
+                    });
+
+                } else {
+                    // PENDING or unknown — poll again with current delay
+                    if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+                    pollIntervalRef.current = setTimeout(fetchStatus, currentDelayRef.current);
+                }
+
+            } catch (err) {
+                console.error("Polling error:", err);
+                // On network error, back off before retrying
+                currentDelayRef.current = Math.min(currentDelayRef.current * 2, POLL_MAX_MS);
+                if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+                pollIntervalRef.current = setTimeout(fetchStatus, currentDelayRef.current);
+            }
+        };
+
+        // Reset backoff state on new job
+        lastProgressRef.current = -1;
+        stagnantCountRef.current = 0;
+        currentDelayRef.current = POLL_MIN_MS;
+
+        // First poll immediately
+        fetchStatus();
+
+        return () => {
+            if (pollIntervalRef.current) clearTimeout(pollIntervalRef.current);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [processing, jobId]);
 
     const handleSuccess = (sessionId: string) => {
         setProgress(100);

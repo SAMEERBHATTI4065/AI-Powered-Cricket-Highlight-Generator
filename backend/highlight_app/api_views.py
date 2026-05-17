@@ -194,6 +194,19 @@ def upload_video_api(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 def get_status_api(request, job_id):
+    from django.core.cache import cache
+
+    # --- Cache layer: return cached response for PROGRESS states ---
+    # PROGRESS responses are cached for 4s to avoid hammering Celery/Redis
+    # on every frontend poll. SUCCESS/FAILURE are never cached.
+    cache_key = f'status_cache_{job_id}'
+    cached = cache.get(cache_key)
+    if cached is not None:
+        resp = JsonResponse(cached)
+        resp['X-Cache'] = 'HIT'
+        resp['Cache-Control'] = 'no-store'
+        return resp
+
     try:
         task_result = AsyncResult(job_id)
         # Accessing state can trigger deserialization of a malformed result
@@ -212,6 +225,9 @@ def get_status_api(request, job_id):
             'progress': 0,
             'status': 'Pending...'
         }
+        # Cache pending for 5s — it rarely changes quickly
+        cache.set(cache_key, response, timeout=5)
+
     elif state == 'PROGRESS':
         response = {
             'state': state,
@@ -227,6 +243,9 @@ def get_status_api(request, job_id):
             'session_id': task_result.info.get('session_id', ''),
             'events': task_result.info.get('events', [])
         }
+        # Cache for 4s — worker updates state every few seconds anyway
+        cache.set(cache_key, response, timeout=4)
+
     elif state == 'SUCCESS':
         # result is the dict returned from process_video_task
         result = task_result.result if task_result.result else {}
@@ -236,20 +255,27 @@ def get_status_api(request, job_id):
             'status': 'Complete',
             'session_id': result.get('session_id') if isinstance(result, dict) else None
         }
+        # Bust the cache so next poll always gets fresh SUCCESS
+        cache.delete(cache_key)
+
     elif state == 'FAILURE':
         response = {
             'state': state,
             'progress': 0,
             'status': str(task_result.info),
         }
+        cache.delete(cache_key)
+
     else:
         response = {
             'state': task_result.state,
             'progress': 0,
             'status': 'Processing...'
         }
-    
-    return JsonResponse(response)
+
+    resp = JsonResponse(response)
+    resp['Cache-Control'] = 'no-store'
+    return resp
 
 def get_results_api(request, session_id):
     try:
