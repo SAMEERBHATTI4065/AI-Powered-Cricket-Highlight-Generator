@@ -27,21 +27,27 @@ def get_openai_client():
     if client is not None:
         return client
     
-    # Try loading from .env
-    _slog("Loading OpenAI API key from .env...", "AI")
-    load_dotenv()
-    api_key = os.getenv("OPENAI_API_KEY")
+    # 1. Check environment variable FIRST (works for Hugging Face Space Secrets & Docker)
+    api_key = os.environ.get("OPENAI_API_KEY")
     
-    if not api_key:
-        # Check if we are in a results directory and try to find .env in parent
-        parent_env = os.path.join("..", "..", ".env")
-        if os.path.exists(parent_env):
-            _slog("Trying parent directory .env...", "AI")
-            load_dotenv(parent_env)
-            api_key = os.getenv("OPENAI_API_KEY")
+    if api_key:
+        _slog(f"Found OPENAI_API_KEY in environment (key: ...{api_key[-4:]})", "AI")
+    else:
+        # 2. Fallback: try loading from local .env file (for local development)
+        _slog("OPENAI_API_KEY not in environment, trying .env file...", "AI")
+        load_dotenv()
+        api_key = os.environ.get("OPENAI_API_KEY")
+        
+        if not api_key:
+            # 3. Try parent directory .env as last resort
+            parent_env = os.path.join("..", "..", ".env")
+            if os.path.exists(parent_env):
+                _slog("Trying parent directory .env...", "AI")
+                load_dotenv(parent_env, override=False)
+                api_key = os.environ.get("OPENAI_API_KEY")
 
     if not api_key:
-        _slog("OPENAI_API_KEY not found in environment!", "WARN")
+        _slog("OPENAI_API_KEY not found in environment or .env files!", "WARN")
         return None
     
     try:
