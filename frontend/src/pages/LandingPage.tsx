@@ -166,7 +166,7 @@ const LandingPage = () => {
                                 className="text-[11px] uppercase tracking-widest text-primary hover:text-primary/80 hover:underline transition-all font-mono font-bold flex items-center gap-1.5"
                             >
                                 <Database className="w-3.5 h-3.5" />
-                                Run Pipeline with Demo Video (845 MB Match)
+                                Test Video
                             </Link>
                         </div>
                     </motion.div>
