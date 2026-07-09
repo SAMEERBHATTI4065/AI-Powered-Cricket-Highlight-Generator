@@ -45,7 +45,6 @@ COPY --from=frontend-builder /app/backend/static/react /app/backend/static/react
 
 # Create necessary folders and set permissions
 RUN mkdir -p /app/logs /app/media/uploads /app/media/results /app/temp /app/backend/staticfiles
-COPY media/uploads/cricket_full_match.mp4* /app/media/uploads/
 RUN chmod -R 777 /app
 
 # Run collectstatic during build to save time on startup

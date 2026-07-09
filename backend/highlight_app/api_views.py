@@ -183,6 +183,16 @@ def upload_video_api(request):
                     shutil.copy2(fallback_path, master_test_path)
                 except Exception as e:
                     logging.error(f"FILE ERROR: Failed to copy backup source: {e}")
+            else:
+                # Backup check for project's internal static demo folder (e.g. Hugging Face upload location)
+                static_fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+                if static_fallback_path.exists():
+                    try:
+                        logging.info(f"FILE: Copying static fallback from {static_fallback_path} to {master_test_path}")
+                        master_test_path.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(static_fallback_path, master_test_path)
+                    except Exception as e:
+                        logging.error(f"FILE ERROR: Failed to copy static fallback source: {e}")
         
         if not master_test_path.exists():
             return JsonResponse({
