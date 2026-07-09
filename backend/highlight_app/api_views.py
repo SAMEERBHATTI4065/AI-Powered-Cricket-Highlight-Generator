@@ -183,6 +183,17 @@ def upload_video_api(request):
                     shutil.copy2(fallback_path, master_test_path)
                 except Exception as e:
                     logging.error(f"FILE ERROR: Failed to copy backup source: {e}")
+            else:
+                # Backup check for project's internal demo video
+                proj_demo_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'demo-video.mp4'
+                if proj_demo_path.exists():
+                    try:
+                        logging.info(f"FILE: Copying project static demo fallback to {master_test_path}")
+                        # Create directories if they do not exist
+                        master_test_path.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(proj_demo_path, master_test_path)
+                    except Exception as e:
+                        logging.error(f"FILE ERROR: Failed to copy project static demo fallback: {e}")
         
         if not master_test_path.exists():
             return JsonResponse({
@@ -202,7 +213,7 @@ def upload_video_api(request):
             return JsonResponse({'error': f"Failed to isolate demo video: {e}"}, status=500)
         
         video_title_val = "Pakistan vs England T20"
-        file_size_mb = 845.0
+        file_size_mb = master_test_path.stat().st_size / (1024 * 1024) if master_test_path.exists() else 845.0
     else:
         video_file = request.FILES['video']
         file_size_mb = video_file.size / (1024 * 1024)
