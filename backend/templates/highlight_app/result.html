@@ -1,0 +1,198 @@
+{% extends 'highlight_app/base.html' %}
+
+{% block title %}Results - Cricket Highlights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .result-section {
+        margin-bottom: 30px;
+    }
+
+    .video-container {
+        position: relative;
+        padding-bottom: 56.25%;
+        /* 16:9 aspect ratio */
+        height: 0;
+        overflow: hidden;
+        background: #000;
+        border-radius: 10px;
+    }
+
+    .video-container video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .summary-box {
+        background: #f8f9fa;
+        padding: 25px;
+        border-radius: 10px;
+        border-left: 5px solid #667eea;
+    }
+
+    .event-badge {
+        display: inline-block;
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .event-boundary {
+        background: #28a745;
+        color: white;
+    }
+
+    .event-wicket {
+        background: #dc3545;
+        color: white;
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .stats-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="mb-0">✨ Highlights Generated Successfully!</h2>
+                <p class="mb-0 mt-2 opacity-75">Original file: {{ original_filename }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ total_events }}</div>
+            <div>Total Events Detected</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-number">{{ verified_events|length }}</div>
+            <div>Verified Highlights</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stats-card">
+            <div class="stats-number">✓</div>
+            <div>Processing Complete</div>
+        </div>
+    </div>
+</div>
+
+<!-- Video Player -->
+{% if video_url %}
+<div class="row result-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">🎬 Final Highlights Video</h4>
+            </div>
+            <div class="card-body">
+                <div class="video-container">
+                    <video controls>
+                        <source src="{{ video_url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+                <div class="mt-3 text-center">
+                    <a href="{{ video_url }}" download="cricket_highlights.mp4" class="btn btn-primary">
+                        📥 Download Highlights Video
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- AI Summary -->
+{% if summary_text %}
+<div class="row result-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">🤖 AI-Generated Match Summary</h4>
+            </div>
+            <div class="card-body">
+                <div class="summary-box">
+                    <pre style="white-space: pre-wrap; font-family: inherit; margin: 0;">{{ summary_text }}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Verified Events Table -->
+{% if verified_events %}
+<div class="row result-section">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">📊 Verified Events</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Event #</th>
+                                <th>Type</th>
+                                <th>Match State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in verified_events %}
+                            <tr>
+                                <td><strong>{{ event.event_no }}</strong></td>
+                                <td>
+                                    {% if event.type == "BOUNDARY" %}
+                                    <span class="event-badge event-boundary">🏏 BOUNDARY</span>
+                                    {% elif event.type == "WICKET" %}
+                                    <span class="event-badge event-wicket">🎯 WICKET</span>
+                                    {% else %}
+                                    <span class="event-badge">{{ event.type }}</span>
+                                    {% endif %}
+                                </td>
+                                <td><code>{{ event.state }}</code></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Actions -->
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="{% url 'upload' %}" class="btn btn-lg btn-primary">
+            🔄 Process Another Video
+        </a>
+    </div>
+</div>
+{% endblock %}
