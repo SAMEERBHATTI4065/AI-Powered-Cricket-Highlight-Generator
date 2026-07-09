@@ -90,8 +90,40 @@ Yeh command aapki active branch ka naam force rename karke **`main`** rakh deti 
 * Pehle default branch ka naam `master` hota tha, ab modern Git me ise `main` rakha jata hai.
 * Command: `git branch -M main` (Yeh sequence me tab use hoti hai jab pehli baar repository set ki jaye).
 
----
-
 ## 🔗 Q7: git remote add hf <URL> kya hai?
 
 Yeh command Git ko batati hai ke ek online repository (bridge) hai jiska nickname **`hf`** hai aur wo is link par pointing hai. Iske baad aap pure link ki jagah sirf `hf` likh kar push/pull kar sakte hain.
+
+---
+
+## ⚠️ Q8: Troubleshooting FAQs (Aapke Sawal)
+
+### 1. Main ne GitHub se 'master' branch delete kar di, phir bhi local system par 'master' kyun dikh rahi hai?
+* **Wajah:** GitHub (website) se branch delete karne se aapke computer (local VS Code) ki branches automatically delete nahi hotin. Git dono jagah alag-alag tracks rakhta hai.
+* **Hal (Solution):** Local computer se use delete karne ke liye terminal me ye command chalayein:
+  ```bash
+  git branch -D master
+  ```
+
+### 2. Mere paas 'git remote -v' me 'hf' (Hugging Face) kyun nahi dikh raha?
+* **Wajah:** Kyunki aapne `.git` folder ko delete kiya tha (`rd -r -force .git`), jiski wajah se Git ki saari settings aur connections (remotes) delete ho gaye.
+* **Hal (Solution):** Hugging Face ka bridge dobara add karne ke liye ye command chalayein:
+  ```bash
+  git remote add hf https://huggingface.co/spaces/Sameer4065/cricket-gen
+  ```
+
+### 3. Hugging Face par branches kaise check karein?
+Hugging Face par push/pull karne se pehle remote branches check karne ke liye:
+```bash
+# Hugging Face se latest branch info fetch karein
+git fetch hf
+
+# Saari remote branches ki list dekhne ke liye
+git branch -r
+```
+
+### 4. Ab code Hugging Face par push kaise karein?
+Kyunki aap is waqt `main` branch par hain, aap niche di gayi command se fresh code Hugging Face par bhej sakte hain:
+```bash
+git push hf main --force
+```

@@ -48,6 +48,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Login failed');
+        if (data.token) {
+            localStorage.setItem('auth_token', data.token);
+        }
         setUser(data.user);
     };
 
@@ -61,6 +64,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Registration failed');
+        if (data.token) {
+            localStorage.setItem('auth_token', data.token);
+        }
         setUser(data.user);
     };
 
@@ -74,11 +80,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Google login failed');
+        if (data.token) {
+            localStorage.setItem('auth_token', data.token);
+        }
         setUser(data.user);
     };
 
     const logout = async () => {
         localStorage.removeItem('last_session_id');
+        localStorage.removeItem('auth_token');
         await fetch('/api/auth/logout/', { method: 'POST', credentials: 'include' });
         setUser(null);
     };
