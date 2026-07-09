@@ -342,6 +342,10 @@ const Dashboard = () => {
         };
 
         xhr.open("POST", "/api/upload/");
+        const token = localStorage.getItem('auth_token');
+        if (token) {
+            xhr.setRequestHeader('Authorization', `Token ${token}`);
+        }
         xhr.send(formData);
     };
 

@@ -23,6 +23,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
 from .models import AnalysisSession, EmailVerificationCode
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
 
@@ -158,6 +159,7 @@ def register_view(request):
 
     user = User.objects.create_user(username=username, email=email, password=password)
     login(request, user)
+    token, _ = Token.objects.get_or_create(user=user)
 
     # Send welcome email to new user
     try:
@@ -172,7 +174,7 @@ def register_view(request):
         logger.error(f"Failed to send welcome email: {e}")
 
     logger.info(f"New user registered: {username}")
-    return JsonResponse({'success': True, 'user': _user_dict(user)}, status=201)
+    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)}, status=201)
 
 
 @csrf_exempt
@@ -195,6 +197,7 @@ def login_view(request):
         return JsonResponse({'error': 'Invalid username or password.'}, status=401)
 
     login(request, user)
+    token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User logged in: {username}")
 
     # Send welcome-back email
@@ -210,7 +213,7 @@ def login_view(request):
         except Exception as e:
             logger.error(f"Failed to send login email: {e}")
 
-    return JsonResponse({'success': True, 'user': _user_dict(user)})
+    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
 
 
 @csrf_exempt
@@ -351,6 +354,7 @@ def google_login_view(request):
         is_new = True
 
     login(request, user)
+    token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User logged in via Google: {user.username}")
 
     # Send relevant notification emails
@@ -377,4 +381,4 @@ def google_login_view(request):
         except Exception as e:
             logger.error(f"Failed to send Google login email: {e}")
 
-    return JsonResponse({'success': True, 'user': _user_dict(user)})
+    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
