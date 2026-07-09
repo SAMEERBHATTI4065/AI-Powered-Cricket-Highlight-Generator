@@ -1,0 +1,18 @@
+# Processing Engine Requirements (Locked)
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+numpy==1.26.4
+scipy==1.12.0
+protobuf==4.25.3
+grpcio==1.60.0
+grpcio-status==1.60.0
+librosa==0.10.1
+opencv-python==4.8.1.78
+google-cloud-vision==3.9.0
+openai>=1.1.0
+httpx>=0.27.0
+python-dotenv==1.0.0
+easyocr==1.7.1
+torch
+torchvision
+setuptools==69.5.1
