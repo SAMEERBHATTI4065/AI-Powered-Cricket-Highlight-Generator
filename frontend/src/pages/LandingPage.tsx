@@ -8,20 +8,20 @@ import { useAuth } from "@/contexts/AuthContext";
 const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) => (
     <motion.div
         whileHover={{ y: -4, scale: 1.01 }}
-        className={`glass-card p-6 sm:p-10 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
+        className={`glass-card p-5 sm:p-8 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
     >
         <div>
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-6 sm:mb-10 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-4 sm:mb-8 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
                 {icon}
             </div>
-            <h3 className="text-base sm:text-xl font-bold mb-2 sm:mb-3 tracking-[0.08em] leading-[1.1]">{title}</h3>
-            <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-[1.6] tracking-[0.02em]">{desc}</p>
+            <h3 className="text-sm sm:text-lg md:text-xl font-bold mb-1.5 sm:mb-3 tracking-[0.08em] leading-[1.1]">{title}</h3>
+            <p className="text-[10px] sm:text-xs md:text-sm text-muted-foreground leading-[1.6] tracking-[0.02em]">{desc}</p>
         </div>
         <a
             href={learnMoreUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-6 sm:mt-10 flex items-center text-[9px] sm:text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="mt-4 sm:mt-8 flex items-center text-[9px] sm:text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
         >
             Learn More <ArrowRight className="w-3 h-3 ml-2" />
         </a>
@@ -138,7 +138,7 @@ const LandingPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.1] md:leading-[0.9] mb-5 sm:mb-8 tracking-[0.05em] uppercase">
+                        <h1 className="font-display text-[1.85rem] sm:text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.1] md:leading-[0.9] mb-5 sm:mb-8 tracking-[0.05em] uppercase">
                             EVERY WICKET.<br />
                             <span className="text-primary">EVERY BOUNDARY.</span><br />
                             IN MINUTES.
@@ -147,14 +147,14 @@ const LandingPage = () => {
                             Drop your match video. Get broadcast-quality highlights and a full AI report.
                             The raw energy of sports meets the precision of AI.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
-                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary w-full sm:w-auto px-[24px] sm:px-[32px] py-[10px] sm:py-[14px] rounded-[4px] text-xs sm:text-base">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
+                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-6 py-2.5 sm:px-[32px] sm:py-[14px] text-xs sm:text-base">
                                 Get Started
                                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                             </Link>
                             <button
                                 onClick={toggleDemo}
-                                className="btn-ghost w-full sm:w-auto px-[24px] sm:px-[32px] py-[10px] sm:py-[14px] rounded-[4px] text-xs sm:text-base group"
+                                className="btn-ghost px-6 py-2.5 sm:px-[32px] sm:py-[14px] text-xs sm:text-base group"
                             >
                                 Watch Demo
                                 <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 group-hover:fill-current transition-all" />
@@ -298,31 +298,31 @@ const LandingPage = () => {
                         size="large"
                         title="Scoreboard OCR 2.0"
                         desc="Our multi-layer OCR engine reads scores, overs, and wickets from any broadcast layout with 99.8% precision."
-                        icon={<LayoutGrid className="w-8 h-8" />}
+                        icon={<LayoutGrid className="w-6 h-6 sm:w-8 sm:h-8" />}
                         learnMoreUrl="https://en.wikipedia.org/wiki/Optical_character_recognition"
                     />
                     <FeatureCard
                         title="Wicket Detection"
                         desc="AI identifies the exact moment of impact for every dismissal."
-                        icon={<Zap className="w-8 h-8" />}
+                        icon={<Zap className="w-6 h-6 sm:w-8 sm:h-8" />}
                         learnMoreUrl="https://en.wikipedia.org/wiki/Computer_vision"
                     />
                     <FeatureCard
                         title="Boundary Clipping"
                         desc="Auto-clipping for every four and six with 5-second buffers."
-                        icon={<Clock className="w-8 h-8" />}
+                        icon={<Clock className="w-6 h-6 sm:w-8 sm:h-8" />}
                         learnMoreUrl="https://en.wikipedia.org/wiki/Video_editing"
                     />
                     <FeatureCard
                         title="AI Match Report"
                         desc="Generative reports that capture the drama of the match."
-                        icon={<FileText className="w-8 h-8" />}
+                        icon={<FileText className="w-6 h-6 sm:w-8 sm:h-8" />}
                         learnMoreUrl="https://en.wikipedia.org/wiki/Natural_language_generation"
                     />
                     <FeatureCard
                         title="Multi-Format Export"
                         desc="Export to MP4, PDF, and clinical CSV/JSON data."
-                        icon={<Download className="w-8 h-8" />}
+                        icon={<Download className="w-6 h-6 sm:w-8 sm:h-8" />}
                         learnMoreUrl="https://en.wikipedia.org/wiki/File_format"
                     />
                 </div>
