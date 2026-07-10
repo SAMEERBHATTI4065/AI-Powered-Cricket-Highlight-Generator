@@ -27,7 +27,7 @@ export default function Login() {
                 google.accounts.id.renderButton(btnEl, {
                     theme: 'outline',
                     size: 'large',
-                    width: '380',
+                    width: window.innerWidth < 400 ? '280' : '340',
                 });
             }
         }
@@ -103,11 +103,10 @@ export default function Login() {
                 </div>
             </div>
 
-            {/* Form Right Panel */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 md:p-16 z-20">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12 md:p-16 z-20">
                 <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-[#00FF87]/5 rounded-full blur-[140px] pointer-events-none z-0" />
 
-                <div className="w-full max-w-md bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
+                <div className="w-full max-w-md bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-5 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
                     {/* Header */}
                     <div className="mb-8">
                         <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">

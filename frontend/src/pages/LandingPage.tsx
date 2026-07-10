@@ -1,5 +1,5 @@
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowRight, BarChart3, Clock, LayoutGrid, Zap, FileText, Download, Share2, Play, CheckCircle2, Shield, Upload, Database } from "lucide-react";
+import { ArrowRight, BarChart3, Clock, LayoutGrid, Zap, FileText, Download, Share2, Play, CheckCircle2, Shield, Upload, Database, X } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Link } from "react-router-dom";
 import { useRef, useState, useEffect } from "react";
@@ -78,6 +78,8 @@ const LandingPage = () => {
     const demoRef = useRef<HTMLElement>(null);
     const videoRef = useRef<HTMLVideoElement>(null);
     const { user } = useAuth();
+    const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+    const [isTermsOpen, setIsTermsOpen] = useState(false);
 
     const scrollToDemo = () => {
         demoRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -412,14 +414,17 @@ const LandingPage = () => {
                     </div>
 
                     <div className="flex items-center gap-6">
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform">
+                        <a href="https://github.com/SAMEERBHATTI4065" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform" title="GitHub">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                        </a>
+                        <a href="https://linkedin.com/in/sameer-zaheer-bhatti-b57707342" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform" title="LinkedIn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+                        </a>
+                        <a href="https://www.instagram.com/sameerbhatti365/" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform" title="Instagram">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
                         </a>
-                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform">
+                        <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform" title="Facebook">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
-                        </a>
-                        <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:scale-105 transition-transform">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
                         </a>
                     </div>
                 </div>
@@ -427,13 +432,93 @@ const LandingPage = () => {
                 <div className="flex flex-col md:flex-row items-center justify-between gap-6 border-t border-white/5 pt-8">
                     <p className="normal-case text-white/40 text-xs font-mono">© 2026 CricketAI. All rights reserved.</p>
                     <div className="flex items-center gap-8 text-[11px] uppercase tracking-[0.15em] text-white/60">
-                        <a href="#" className="hover:text-primary transition-colors">Privacy</a>
-                        <a href="#" className="hover:text-primary transition-colors">Terms</a>
-                        <a href="#" className="hover:text-primary transition-colors">Twitter</a>
-                        <a href="#" className="hover:text-primary transition-colors">GitHub</a>
+                        <button onClick={() => setIsPrivacyOpen(true)} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Privacy</button>
+                        <button onClick={() => setIsTermsOpen(true)} className="hover:text-primary transition-colors cursor-pointer bg-transparent border-none">Terms</button>
+                        <a href="https://github.com/SAMEERBHATTI4065" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">GitHub</a>
                     </div>
                 </div>
             </footer>
+
+            {/* --- Modals for Privacy and Terms --- */}
+            <AnimatePresence>
+                {isPrivacyOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setIsPrivacyOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 20 }}
+                            className="bg-[#0B1525]/95 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-left relative shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setIsPrivacyOpen(false)}
+                                className="absolute top-5 right-5 text-white/50 hover:text-white cursor-pointer bg-transparent border-none outline-none"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-4 uppercase tracking-wider">Privacy Policy</h3>
+                            <div className="space-y-4 text-xs sm:text-sm text-white/70 font-body leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                                <p>Welcome to CricketAI. We value your privacy and are committed to protecting your personal data.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">1. Data Collection & Media Security</h4>
+                                <p>When you upload video files for highlights generation, they are stored securely on our isolated processing servers. We implement automatic cleanup routines that completely erase media uploads and generated outputs after highlight processing is completed.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">2. Account Credentials</h4>
+                                <p>If you register an account or use Google OAuth single sign-on, we only collect necessary information (like username, email, and password hashes) to authenticate your access to your dashboard archives. We never share or sell your details.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">3. Security Standards</h4>
+                                <p>We employ high-grade SSL/TLS encryption for all data in transit, ensuring your video assets and user credentials remain strictly private and secure.</p>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            <AnimatePresence>
+                {isTermsOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[200] bg-black/85 backdrop-blur-md flex items-center justify-center p-4"
+                        onClick={() => setIsTermsOpen(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 20 }}
+                            className="bg-[#0B1525]/95 border border-white/10 rounded-3xl p-6 sm:p-8 max-w-lg w-full text-left relative shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                onClick={() => setIsTermsOpen(false)}
+                                className="absolute top-5 right-5 text-white/50 hover:text-white cursor-pointer bg-transparent border-none outline-none"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-4 uppercase tracking-wider">Terms of Service</h3>
+                            <div className="space-y-4 text-xs sm:text-sm text-white/70 font-body leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                                <p>By accessing CricketAI, you agree to comply with and be bound by the following Terms and Conditions of service.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">1. Acceptable Use Policy</h4>
+                                <p>You are solely responsible for all video assets uploaded to our platform. You agree not to upload copyrighted content, prohibited media, or run malicious scripts designed to overload the highlight processing pipeline.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">2. Processing & Resource Fair-Use</h4>
+                                <p>Highlight generation utilizes computationally heavy AI pipeline engines. We reserve the right to apply rate limiting, queue processing delays, or restrict concurrent uploads to maintain system integrity and fair availability for all users.</p>
+                                
+                                <h4 className="font-bold text-primary uppercase text-[10px] sm:text-xs tracking-wider mt-4">3. Disclaimers</h4>
+                                <p>CricketAI services are provided "as is". We make no warranties regarding the absolute precision of event detections, scoreboard OCR outputs, or continuous uptime of processing workers.</p>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

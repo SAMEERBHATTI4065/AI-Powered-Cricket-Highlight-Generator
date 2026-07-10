@@ -472,10 +472,64 @@ def test_video_info(request):
 def serve_demo_video(request):
     file_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'demo-video.mp4'
     if file_path.exists() and file_path.stat().st_size > 1024 * 1024:
-        return FileResponse(open(file_path, 'rb'), content_type='video/mp4')
+        # Use HTTP Range requests for smooth video streaming and compatibility
+        range_header = request.META.get('HTTP_RANGE', '').strip()
+        range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
+        size = file_path.stat().st_size
+        content_type = 'video/mp4'
+
+        if range_match:
+            first_byte, last_byte = range_match.groups()
+            first_byte = int(first_byte) if first_byte else 0
+            last_byte = int(last_byte) if last_byte else size - 1
+            if last_byte >= size:
+                last_byte = size - 1
+            length = last_byte - first_byte + 1
+            
+            def file_iterator(path, offset, chunk_size=8192):
+                with open(path, 'rb') as f:
+                    f.seek(offset)
+                    remaining = length
+                    while remaining > 0:
+                        data = f.read(min(chunk_size, remaining))
+                        if not data:
+                            break
+                        yield data
+                        remaining -= len(data)
+
+            response = StreamingHttpResponse(file_iterator(file_path, first_byte), status=206, content_type=content_type)
+            response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
+            response['Accept-Ranges'] = 'bytes'
+            response['Content-Length'] = str(length)
+        else:
+            response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+            response['Accept-Ranges'] = 'bytes'
+            response['Content-Length'] = str(size)
+            
+        return response
         
-    # Redirect to CDN if file is missing or is an LFS pointer
+    # If the local file is missing or is an LFS pointer, stream/proxy from public CDN to prevent CORS/redirect errors
+    import requests
     public_url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-    return redirect(public_url)
+    try:
+        req_headers = {}
+        if 'HTTP_RANGE' in request.META:
+            req_headers['Range'] = request.META['HTTP_RANGE']
+            
+        r = requests.get(public_url, headers=req_headers, stream=True, timeout=15)
+        response = StreamingHttpResponse(r.iter_content(chunk_size=8192), status=r.status_code, content_type='video/mp4')
+        
+        # Propagate range headers from CDN response
+        if 'Content-Range' in r.headers:
+            response['Content-Range'] = r.headers['Content-Range']
+        if 'Accept-Ranges' in r.headers:
+            response['Accept-Ranges'] = r.headers['Accept-Ranges']
+        if 'Content-Length' in r.headers:
+            response['Content-Length'] = r.headers['Content-Length']
+        return response
+    except Exception as e:
+        logger.error(f"Failed to proxy demo video from CDN: {e}")
+        # Fallback redirect if streaming fails
+        return redirect(public_url)
 
 
