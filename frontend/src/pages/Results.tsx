@@ -102,11 +102,11 @@ const ShareModal = ({ isOpen, onClose, url, videoUrl }: { isOpen: boolean, onClo
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm" onClick={onClose}>
       <motion.div
         initial={{ opacity: 0, scale: 0.9, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="glass-card w-full max-w-md p-[32px] bg-[#0B1525]/90 border-white/10 flex flex-col gap-[24px] relative"
+        className="glass-card w-full max-w-md p-6 sm:p-[32px] bg-[#0B1525]/90 border-white/10 flex flex-col gap-4 sm:gap-[24px] relative"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute top-6 right-6 text-white/40 hover:text-white transition-colors">
@@ -115,31 +115,31 @@ const ShareModal = ({ isOpen, onClose, url, videoUrl }: { isOpen: boolean, onClo
 
         <div className="text-center relative">
           <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-32 h-32 bg-primary/10 rounded-full blur-3xl -z-10" />
-          <h3 className="text-xs uppercase tracking-[6px] text-white/40 font-bold mb-3">Share Results</h3>
-          <p className="text-3xl font-black tracking-tighter text-white mb-0 drop-shadow-sm">DISPATCH <span className="text-primary italic">ANALYSIS</span></p>
+          <h3 className="text-[10px] uppercase tracking-[6px] text-white/40 font-bold mb-2">Share Results</h3>
+          <p className="text-2xl sm:text-3xl font-black tracking-tighter text-white mb-0 drop-shadow-sm">DISPATCH <span className="text-primary italic">ANALYSIS</span></p>
         </div>
 
-        <div className="grid grid-cols-2 gap-[12px]">
+        <div className="grid grid-cols-2 gap-2.5 sm:gap-[12px]">
           <button
             onClick={handleCopy}
-            className="flex flex-col items-center justify-center gap-3 p-6 rounded-[16px] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all group"
+            className="flex flex-col items-center justify-center gap-2 sm:gap-3 p-4 sm:p-6 rounded-[16px] bg-white/[0.03] border border-white/[0.06] hover:bg-white/[0.06] transition-all group"
           >
-            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#00ff80]/20 group-hover:text-[#00ff80] transition-colors">
-              <Copy className="w-5 h-5" />
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-[#00ff80]/20 group-hover:text-[#00ff80] transition-colors">
+              <Copy className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-white/60">{copied ? 'Copied!' : 'Copy Link'}</span>
+            <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-white/60">{copied ? 'Copied!' : 'Copy Link'}</span>
           </button>
 
           {shareOptions.map((opt) => (
             <button
               key={opt.name}
               onClick={() => { opt.action(); onClose(); }}
-              className="flex flex-col items-center justify-center gap-4 p-8 rounded-[24px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] transition-all group hover:border-primary/30 hover:shadow-[0_0_30px_rgba(0,255,128,0.05)]"
+              className="flex flex-col items-center justify-center gap-2 sm:gap-4 p-4 sm:p-6 rounded-[16px] sm:rounded-[24px] bg-white/[0.03] border border-white/[0.08] hover:bg-white/[0.06] transition-all group hover:border-primary/30 hover:shadow-[0_0_30px_rgba(0,255,128,0.05)]"
             >
-              <div className="w-14 h-14 rounded-full bg-white/5 flex items-center justify-center text-white/60 group-hover:bg-white/10 transition-all duration-300 group-hover:scale-110" style={{ color: opt.color }}>
+              <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full bg-white/5 flex items-center justify-center text-white/60 group-hover:bg-white/10 transition-all duration-300 group-hover:scale-110" style={{ color: opt.color }}>
                 {opt.icon}
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">{opt.name}</span>
+              <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-widest text-white/60 group-hover:text-white transition-colors">{opt.name}</span>
             </button>
           ))}
         </div>
