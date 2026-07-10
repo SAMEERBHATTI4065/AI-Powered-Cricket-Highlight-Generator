@@ -436,3 +436,29 @@ def check_share_token(request, session_id):
     except AnalysisSession.DoesNotExist:
         return JsonResponse({'valid': False}, status=403)
 
+def test_video_info(request):
+    uploads_path = Path(settings.MEDIA_ROOT) / 'uploads' / 'cricket_full_match.mp4'
+    fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+    
+    file_path = None
+    if uploads_path.exists():
+        file_path = uploads_path
+    elif fallback_path.exists():
+        file_path = fallback_path
+        
+    if file_path and file_path.exists():
+        size_bytes = file_path.stat().st_size
+        size_mb = size_bytes / (1024 * 1024)
+        return JsonResponse({
+            'exists': True,
+            'filename': 'cricket_full_match.mp4',
+            'size_mb': round(size_mb, 1)
+        })
+    else:
+        return JsonResponse({
+            'exists': False,
+            'filename': 'cricket_full_match.mp4',
+            'size_mb': 845.0
+        })
+
+

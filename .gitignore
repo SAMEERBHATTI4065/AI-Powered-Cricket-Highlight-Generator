@@ -29,6 +29,7 @@ local_settings.py
 db.sqlite3
 /media/*
 !/media/uploads/
+/media/uploads/*.mp4
 /backend/staticfiles
 
 # Environment variables - NEVER commit these!
@@ -84,5 +85,5 @@ frontend/.vite/
 # Exceptions
 !frontend/public/demo-video.mp4
 !backend/static/demo/demo-video.mp4
-!media/uploads/cricket_full_match.mp4
 !media/uploads/.gitkeep
+
