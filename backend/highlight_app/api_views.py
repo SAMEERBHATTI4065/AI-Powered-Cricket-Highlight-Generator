@@ -173,46 +173,54 @@ def upload_video_api(request):
     }
     
     if is_test_video:
-        master_test_path = Path(settings.MEDIA_ROOT) / 'uploads' / 'cricket_full_match.mp4'
-        if not master_test_path.exists():
-            # Backup check for D:\cricket_full_match.mp4
-            fallback_path = Path("D:/cricket_full_match.mp4")
-            if fallback_path.exists():
-                try:
-                    logging.info(f"FILE: Copying D:\\ source fallback to {master_test_path}")
-                    shutil.copy2(fallback_path, master_test_path)
-                except Exception as e:
-                    logging.error(f"FILE ERROR: Failed to copy backup source: {e}")
-            else:
-                # Backup check for project's internal static demo folder (e.g. Hugging Face upload location)
-                static_fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
-                if static_fallback_path.exists():
+        master_test_path = None
+        if upload_dir.exists():
+            # Find any MP4 files that are not session-isolated files (session_id starts with a UUID prefix format)
+            candidate_files = [
+                f for f in upload_dir.glob('*.mp4')
+                if not f.name.startswith('.') and not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-', f.name)
+            ]
+            if candidate_files:
+                master_test_path = candidate_files[0]
+                
+        if not master_test_path or not master_test_path.exists():
+            master_test_path = Path(settings.MEDIA_ROOT) / 'uploads' / 'cricket_full_match.mp4'
+            if not master_test_path.exists():
+                fallback_path = Path("D:/cricket_full_match.mp4")
+                if fallback_path.exists():
                     try:
-                        logging.info(f"FILE: Copying static fallback from {static_fallback_path} to {master_test_path}")
-                        master_test_path.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.copy2(static_fallback_path, master_test_path)
+                        logging.info(f"FILE: Copying D:\\ source fallback to {master_test_path}")
+                        shutil.copy2(fallback_path, master_test_path)
                     except Exception as e:
-                        logging.error(f"FILE ERROR: Failed to copy static fallback source: {e}")
+                        logging.error(f"FILE ERROR: Failed to copy backup source: {e}")
+                else:
+                    static_fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+                    if static_fallback_path.exists():
+                        try:
+                            logging.info(f"FILE: Copying static fallback from {static_fallback_path} to {master_test_path}")
+                            master_test_path.parent.mkdir(parents=True, exist_ok=True)
+                            shutil.copy2(static_fallback_path, master_test_path)
+                        except Exception as e:
+                            logging.error(f"FILE ERROR: Failed to copy static fallback source: {e}")
         
-        if not master_test_path.exists():
+        if not master_test_path or not master_test_path.exists():
             return JsonResponse({
-                'error': 'Test video file sync error',
-                'details': 'cricket_full_match.mp4 was not found in directory. Please run the sync command first:\n\n'
-                           'docker cp "D:\\cricket_full_match.mp4" docker-backend-1:/app/media/uploads/cricket_full_match.mp4'
+                'error': 'Test video file not found',
+                'details': 'No test video file (.mp4) was found in uploads directory or fallback locations.'
             }, status=404)
         
-        video_filename = f"{session_id}_cricket_full_match.mp4"
+        video_filename = f"{session_id}_{master_test_path.name}"
         video_path = upload_dir / video_filename
         try:
-            logging.info(f"FILE: Copying master demo to {video_path}")
+            logging.info(f"FILE: Copying master demo {master_test_path.name} to {video_path}")
             shutil.copy2(master_test_path, video_path)
             logging.info("FILE: Demo video copied successfully for session")
         except Exception as e:
             logging.error(f"FILE ERROR: Demo video copy failed: {e}")
             return JsonResponse({'error': f"Failed to isolate demo video: {e}"}, status=500)
         
-        video_title_val = "Pakistan vs England T20"
-        file_size_mb = 845.0
+        video_title_val = master_test_path.stem.replace('_', ' ').replace('-', ' ').title()
+        file_size_mb = master_test_path.stat().st_size / (1024 * 1024)
     else:
         video_file = request.FILES['video']
         file_size_mb = video_file.size / (1024 * 1024)
@@ -437,21 +445,26 @@ def check_share_token(request, session_id):
         return JsonResponse({'valid': False}, status=403)
 
 def test_video_info(request):
-    uploads_path = Path(settings.MEDIA_ROOT) / 'uploads' / 'cricket_full_match.mp4'
-    fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+    uploads_dir = Path(settings.MEDIA_ROOT) / 'uploads'
     
     file_path = None
-    if uploads_path.exists():
-        file_path = uploads_path
-    elif fallback_path.exists():
-        file_path = fallback_path
+    if uploads_dir.exists():
+        # Find any MP4 files, ignoring hidden files
+        mp4_files = [f for f in uploads_dir.glob('*.mp4') if not f.name.startswith('.')]
+        if mp4_files:
+            file_path = mp4_files[0]
+            
+    if not file_path:
+        fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+        if fallback_path.exists():
+            file_path = fallback_path
         
     if file_path and file_path.exists():
         size_bytes = file_path.stat().st_size
         size_mb = size_bytes / (1024 * 1024)
         return JsonResponse({
             'exists': True,
-            'filename': 'cricket_full_match.mp4',
+            'filename': file_path.name,
             'size_mb': round(size_mb, 1)
         })
     else:
