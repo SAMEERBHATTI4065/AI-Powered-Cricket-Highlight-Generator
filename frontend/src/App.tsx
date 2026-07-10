@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import SimulatorWrapper from "./components/SimulatorWrapper";
 
 const queryClient = new QueryClient();
 
@@ -51,7 +52,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter basename="/">
-          <AnimatedRoutes />
+          <SimulatorWrapper>
+            <AnimatedRoutes />
+          </SimulatorWrapper>
         </BrowserRouter>
       </AuthProvider>
     </TooltipProvider>
