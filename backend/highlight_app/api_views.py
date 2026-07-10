@@ -510,9 +510,11 @@ def serve_demo_video(request):
         
     # If the local file is missing or is an LFS pointer, stream/proxy from public CDN to prevent CORS/redirect errors
     import requests
-    public_url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    public_url = "https://vjs.zencdn.net/v/oceans.mp4"
     try:
-        req_headers = {}
+        req_headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
         if 'HTTP_RANGE' in request.META:
             req_headers['Range'] = request.META['HTTP_RANGE']
             

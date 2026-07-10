@@ -27,7 +27,7 @@ export default function Login() {
                 google.accounts.id.renderButton(btnEl, {
                     theme: 'outline',
                     size: 'large',
-                    width: window.innerWidth < 400 ? '280' : '340',
+                    width: window.innerWidth < 640 ? '280' : '340',
                 });
             }
         }

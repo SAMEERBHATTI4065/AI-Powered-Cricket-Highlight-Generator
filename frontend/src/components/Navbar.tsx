@@ -90,7 +90,7 @@ const Navbar = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[110] bg-background flex flex-col items-center justify-center gap-6 p-10"
+            className="fixed inset-0 z-[110] bg-background flex flex-col items-center justify-center gap-5 p-8"
           >
             <button
               className="absolute top-8 right-8 text-white p-2 hover:bg-white/5 rounded-full transition-colors"
@@ -104,42 +104,44 @@ const Navbar = () => {
                 key={link.name}
                 to={link.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-3xl font-display font-medium tracking-widest uppercase transition-colors hover:text-primary ${location.pathname === link.path ? "text-primary" : "text-white"
+                className={`text-2xl font-display font-medium tracking-widest uppercase transition-colors hover:text-primary ${location.pathname === link.path ? "text-primary" : "text-white"
                   }`}
               >
                 {link.name}
               </Link>
             ))}
 
-            {user ? (
-              <div className="flex flex-col items-center gap-3 mt-4">
-                <span className="text-xs text-white/50 font-mono">Hi, {user.username}</span>
-                <button
-                  onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                  className="flex items-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-6 py-2.5 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300"
+            <div className="flex flex-col items-center gap-3 mt-4 w-full">
+              {user ? (
+                <>
+                  <span className="text-xs text-white/50 font-mono">Hi, {user.username}</span>
+                  <button
+                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                    className="flex items-center justify-center gap-1.5 border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500/5 px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 w-auto min-w-[140px]"
+                  >
+                    <LogOut size={12} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 w-auto min-w-[140px]"
                 >
-                  <LogOut size={12} />
-                  Logout
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-1.5 bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] max-w-[200px] w-full mt-4"
-              >
-                <LogIn size={12} />
-                Login
-              </Link>
-            )}
+                  <LogIn size={12} />
+                  Login
+                </Link>
+              )}
 
-            <Link
-              to={user ? "/dashboard" : "/login"}
-              onClick={() => setIsMobileMenuOpen(false)}
-              className="bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] text-center max-w-[200px] w-full mt-2"
-            >
-              Start Analysing
-            </Link>
+              <Link
+                to={user ? "/dashboard" : "/login"}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="flex items-center justify-center bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] text-center w-auto min-w-[140px]"
+              >
+                Start Analysing
+              </Link>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
