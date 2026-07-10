@@ -24,6 +24,7 @@ from django.views.decorators.http import require_http_methods
 
 from .models import AnalysisSession, EmailVerificationCode
 from rest_framework.authtoken.models import Token
+from .tasks import send_async_email
 
 logger = logging.getLogger(__name__)
 
@@ -69,18 +70,17 @@ def send_code_view(request):
     code = _generate_otp()
     EmailVerificationCode.objects.create(email=email, code=code)
 
-    # Send email
+    # Send email asynchronously via Celery to prevent HTTP thread blocking/hanging
     try:
-        send_mail(
+        send_async_email.delay(
             subject='🏏 CricketAI — Your Verification Code',
             message=f'Your CricketAI verification code is: {code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.',
-            from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[email],
             fail_silently=False,
         )
-        logger.info(f"Verification code sent to {email}: {code}")
+        logger.info(f"Verification code queued for {email}: {code}")
     except Exception as e:
-        logger.error(f"Failed to send email to {email}: {e}")
+        logger.error(f"Failed to queue verification email to {email}: {e}")
         # Still return success so the code is usable in dev (console backend)
         logger.info(f"[DEV] Verification code for {email}: {code}")
 
@@ -200,18 +200,17 @@ def login_view(request):
     token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User logged in: {username}")
 
-    # Send welcome-back email
+    # Send welcome-back email asynchronously
     if user.email:
         try:
-            send_mail(
+            send_async_email.delay(
                 subject='🏏 CricketAI — Login Notification',
                 message=f'Hi {user.username},\n\nYou have successfully logged into CricketAI.\n\nIf this was not you, please change your password immediately.\n\n— The CricketAI Team',
-                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[user.email],
                 fail_silently=True,
             )
         except Exception as e:
-            logger.error(f"Failed to send login email: {e}")
+            logger.error(f"Failed to queue login notification email: {e}")
 
     return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
 
@@ -357,28 +356,26 @@ def google_login_view(request):
     token, _ = Token.objects.get_or_create(user=user)
     logger.info(f"User logged in via Google: {user.username}")
 
-    # Send relevant notification emails
+    # Send relevant notification emails asynchronously
     if is_new:
         try:
-            send_mail(
+            send_async_email.delay(
                 subject='🏏 Welcome to CricketAI!',
                 message=f'Hi {user.username},\n\nWelcome to CricketAI! Your account has been created via Google Sign-In.\n\nEnjoy auto-generating highlights!\n— The CricketAI Team',
-                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=True,
             )
         except Exception as e:
-            logger.error(f"Failed to send Google welcome email: {e}")
+            logger.error(f"Failed to queue Google welcome email: {e}")
     else:
         try:
-            send_mail(
+            send_async_email.delay(
                 subject='🏏 CricketAI — Login Notification',
                 message=f'Hi {user.username},\n\nYou successfully logged in using Google.\n— The CricketAI Team',
-                from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[email],
                 fail_silently=True,
             )
         except Exception as e:
-            logger.error(f"Failed to send Google login email: {e}")
+            logger.error(f"Failed to queue Google login email: {e}")
 
     return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})

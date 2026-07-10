@@ -164,3 +164,25 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
     except Exception as e:
         _tlog(f"TASK FAILED: {e}", "ERR")
         raise e
+
+@shared_task
+def send_async_email(subject, message, recipient_list, from_email=None, fail_silently=False):
+    from django.core.mail import send_mail
+    from django.conf import settings
+    
+    if not from_email:
+        from_email = settings.DEFAULT_FROM_EMAIL
+        
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=from_email,
+            recipient_list=recipient_list,
+            fail_silently=fail_silently
+        )
+    except Exception as e:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Async email sending failed: {e}")
+

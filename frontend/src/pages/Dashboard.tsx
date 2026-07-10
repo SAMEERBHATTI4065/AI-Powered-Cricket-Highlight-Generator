@@ -19,6 +19,28 @@ const Dashboard = () => {
     const [searchParams] = useSearchParams();
     const isDemoMode = searchParams.get('demo') === 'true';
 
+    const [demoFileName, setDemoFileName] = useState("cricket_full_match.mp4");
+    const [demoFileSizeMb, setDemoFileSizeMb] = useState(845.0);
+
+    // Fetch actual test video info if in demo mode
+    useEffect(() => {
+        if (isDemoMode) {
+            const fetchDemoInfo = async () => {
+                try {
+                    const response = await fetch('/api/test-video-info/');
+                    const data = await response.json();
+                    if (data.exists) {
+                        setDemoFileName(data.filename);
+                        setDemoFileSizeMb(data.size_mb);
+                    }
+                } catch (e) {
+                    console.error("Error fetching demo info:", e);
+                }
+            };
+            fetchDemoInfo();
+        }
+    }, [isDemoMode]);
+
     const [file, setFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [processing, setProcessing] = useState(false);
@@ -481,10 +503,10 @@ const Dashboard = () => {
                                         >
                                             <Film className="w-12 h-12 sm:w-16 sm:h-16 text-primary mb-5 animate-pulse" />
                                             <h3 className="text-xl sm:text-2xl font-bold tracking-[0.1em] uppercase mb-2 max-w-[200px] sm:max-w-[250px] truncate">
-                                                {isDemoMode ? "cricket_full_match.mp4" : file?.name}
+                                                {isDemoMode ? demoFileName : file?.name}
                                             </h3>
                                             <p className="text-primary font-mono text-sm sm:text-base tracking-wider">
-                                                {isDemoMode ? "845.0 MB READY (DEMO MATCH)" : `${((file?.size || 0) / (1024 * 1024)).toFixed(1)} MB READY`}
+                                                {isDemoMode ? `${demoFileSizeMb.toFixed(1)} MB READY (DEMO MATCH)` : `${((file?.size || 0) / (1024 * 1024)).toFixed(1)} MB READY`}
                                             </p>
                                         </motion.div>
                                     ) : (

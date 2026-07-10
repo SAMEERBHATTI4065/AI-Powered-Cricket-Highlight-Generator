@@ -20,5 +20,7 @@ urlpatterns = [
     path('auth/me/', auth_views.me_view, name='api_me'),
     # User History
     path('auth/history/', auth_views.history_view, name='api_history'),
+    path('test-video-info/', api_views.test_video_info, name='api_test_video_info'),
 ]
+
 
