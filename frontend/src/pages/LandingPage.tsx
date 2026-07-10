@@ -288,9 +288,9 @@ const LandingPage = () => {
 
             {/* --- Section 4: Features Bento Grid --- */}
             <section className="py-[80px] container mx-auto px-6">
-                <div className="text-center mb-24">
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-4 block">CAPABILITIES</span>
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-[0.08em]">THE ENGINE ROOM.</h2>
+                <div className="text-center mb-12 sm:mb-24">
+                    <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2 sm:mb-4 block">CAPABILITIES</span>
+                    <h2 className="text-xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-[0.08em]">THE ENGINE ROOM.</h2>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
@@ -330,9 +330,9 @@ const LandingPage = () => {
 
             {/* --- Section 5: Team Section --- */}
             <section className="py-[80px] container mx-auto px-6">
-                <div className="text-center mb-24">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 leading-[1.1] tracking-[0.08em]">BUILT BY BELIEVERS.</h2>
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold block">The team behind CricketAI</span>
+                <div className="text-center mb-12 sm:mb-24">
+                    <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 leading-[1.1] tracking-[0.08em]">BUILT BY BELIEVERS.</h2>
+                    <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-bold block">The team behind CricketAI</span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -363,14 +363,14 @@ const LandingPage = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className="bg-surface/40 p-6 sm:p-10 rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
+                            className="bg-surface/40 p-5 sm:p-8 rounded-[20px] sm:rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
                         >
-                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg sm:text-xl mb-4 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
+                            <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm sm:text-xl mb-3 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
                                 {member.initials}
                             </div>
-                            <h3 className="text-base sm:text-xl font-bold text-white mb-1 sm:mb-2 tracking-[0.08em]">{member.name}</h3>
-                            <p className="text-primary text-[10px] sm:text-xs font-semibold mb-2 sm:mb-3 tracking-[0.02em]">{member.role}</p>
-                            <p className="text-muted-foreground text-[11px] sm:text-xs md:text-sm leading-[1.6] tracking-[0.02em]">{member.bio}</p>
+                            <h3 className="text-sm sm:text-xl font-bold text-white mb-1 sm:mb-2 tracking-[0.08em]">{member.name}</h3>
+                            <p className="text-primary text-[9px] sm:text-xs font-semibold mb-1.5 sm:mb-3 tracking-[0.02em]">{member.role}</p>
+                            <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm leading-[1.6] tracking-[0.02em]">{member.bio}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -391,11 +391,11 @@ const LandingPage = () => {
                         <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[5.5rem] font-bold mb-6 sm:mb-8 tracking-[0.05em] uppercase leading-[1.1] md:leading-[0.85]">
                             READY TO<br /><span className="text-primary italic">BROADCAST?</span>
                         </h2>
-                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-6 py-3 sm:px-8 sm:py-3.5 text-sm sm:text-lg group">
+                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-5 py-2.5 sm:px-8 sm:py-3.5 text-xs sm:text-lg group">
                             Analyse Your First Match — Free
-                            <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-3.5 h-3.5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <p className="mt-6 sm:mt-10 text-muted-foreground text-xs sm:text-sm uppercase tracking-[0.2em] font-medium text-center">No credit card required.</p>
+                        <p className="mt-4 sm:mt-10 text-muted-foreground/60 text-[9px] sm:text-sm uppercase tracking-[0.25em] font-bold text-center">No credit card required.</p>
                     </motion.div>
                 </div>
             </section>
