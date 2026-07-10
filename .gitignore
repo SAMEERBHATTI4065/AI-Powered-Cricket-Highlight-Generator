@@ -27,8 +27,8 @@ wheels/
 *.log
 local_settings.py
 db.sqlite3
-db.sqlite3-journal
-/media
+/media/*
+!/media/uploads/
 /backend/staticfiles
 
 # Environment variables - NEVER commit these!
@@ -83,3 +83,6 @@ frontend/.vite/
 
 # Exceptions
 !frontend/public/demo-video.mp4
+!backend/static/demo/demo-video.mp4
+!media/uploads/cricket_full_match.mp4
+!media/uploads/.gitkeep
