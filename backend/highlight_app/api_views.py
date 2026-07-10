@@ -173,40 +173,12 @@ def upload_video_api(request):
     }
     
     if is_test_video:
-        master_test_path = None
-        if upload_dir.exists():
-            # Find any MP4 files that are not session-isolated files (session_id starts with a UUID prefix format)
-            candidate_files = [
-                f for f in upload_dir.glob('*.mp4')
-                if not f.name.startswith('.') and not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-', f.name)
-            ]
-            if candidate_files:
-                master_test_path = candidate_files[0]
-                
-        if not master_test_path or not master_test_path.exists():
-            master_test_path = Path(settings.MEDIA_ROOT) / 'uploads' / 'cricket_full_match.mp4'
-            if not master_test_path.exists():
-                fallback_path = Path("D:/cricket_full_match.mp4")
-                if fallback_path.exists():
-                    try:
-                        logging.info(f"FILE: Copying D:\\ source fallback to {master_test_path}")
-                        shutil.copy2(fallback_path, master_test_path)
-                    except Exception as e:
-                        logging.error(f"FILE ERROR: Failed to copy backup source: {e}")
-                else:
-                    static_fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
-                    if static_fallback_path.exists():
-                        try:
-                            logging.info(f"FILE: Copying static fallback from {static_fallback_path} to {master_test_path}")
-                            master_test_path.parent.mkdir(parents=True, exist_ok=True)
-                            shutil.copy2(static_fallback_path, master_test_path)
-                        except Exception as e:
-                            logging.error(f"FILE ERROR: Failed to copy static fallback source: {e}")
+        master_test_path = ensure_valid_demo_video()
         
         if not master_test_path or not master_test_path.exists():
             return JsonResponse({
                 'error': 'Test video file not found',
-                'details': 'No test video file (.mp4) was found in uploads directory or fallback locations.'
+                'details': 'No valid test video file (.mp4) was found or could be resolved/downloaded.'
             }, status=404)
         
         video_filename = f"{session_id}_{master_test_path.name}"
@@ -444,21 +416,44 @@ def check_share_token(request, session_id):
     except AnalysisSession.DoesNotExist:
         return JsonResponse({'valid': False}, status=403)
 
-def test_video_info(request):
+def ensure_valid_demo_video():
     uploads_dir = Path(settings.MEDIA_ROOT) / 'uploads'
+    uploads_dir.mkdir(parents=True, exist_ok=True)
+    demo_path = uploads_dir / 'cricket_full_match.mp4'
     
-    file_path = None
-    if uploads_dir.exists():
-        # Find any MP4 files, ignoring hidden files
-        mp4_files = [f for f in uploads_dir.glob('*.mp4') if not f.name.startswith('.')]
-        if mp4_files:
-            file_path = mp4_files[0]
+    # Check if there is already a valid MP4 file (size > 1MB)
+    mp4_files = [f for f in uploads_dir.glob('*.mp4') if not f.name.startswith('.') and not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-', f.name)]
+    valid_file = None
+    for f in mp4_files:
+        if f.exists() and f.stat().st_size > 1024 * 1024:
+            valid_file = f
+            break
             
-    if not file_path:
-        fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
-        if fallback_path.exists():
-            file_path = fallback_path
+    if valid_file:
+        return valid_file
         
+    # If no valid MP4 exists (or it is a 130-byte LFS pointer), download a small, valid 15MB sample video
+    import urllib.request
+    logger.info("Demo video not found or invalid LFS pointer. Downloading sample video from CDN...")
+    
+    url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    try:
+        # Download with a timeout of 30 seconds
+        urllib.request.urlretrieve(url, demo_path)
+        logger.info(f"Downloaded sample video successfully to {demo_path}")
+        return demo_path
+    except Exception as e:
+        logger.error(f"Failed to download sample video: {e}")
+        
+    # Fallback to local static demo file if it's valid
+    fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
+    if fallback_path.exists() and fallback_path.stat().st_size > 1024 * 1024:
+        return fallback_path
+        
+    return None
+
+def test_video_info(request):
+    file_path = ensure_valid_demo_video()
     if file_path and file_path.exists():
         size_bytes = file_path.stat().st_size
         size_mb = size_bytes / (1024 * 1024)
