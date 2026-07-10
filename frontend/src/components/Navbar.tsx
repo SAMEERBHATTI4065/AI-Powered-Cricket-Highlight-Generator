@@ -112,13 +112,13 @@ const Navbar = () => {
             ))}
 
             {user ? (
-              <div className="flex flex-col items-center gap-4 mt-6">
-                <span className="text-sm text-white/50 font-mono">Hi, {user.username}</span>
+              <div className="flex flex-col items-center gap-3 mt-4">
+                <span className="text-xs text-white/50 font-mono">Hi, {user.username}</span>
                 <button
                   onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                  className="flex items-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-8 py-3 text-sm font-bold uppercase tracking-widest rounded-full transition-all duration-300"
+                  className="flex items-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-6 py-2.5 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300"
                 >
-                  <LogOut size={14} />
+                  <LogOut size={12} />
                   Logout
                 </button>
               </div>
@@ -126,9 +126,9 @@ const Navbar = () => {
               <Link
                 to="/login"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-1.5 bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-8 py-3 text-sm font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] w-full max-w-xs mt-6"
+                className="flex items-center justify-center gap-1.5 bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] max-w-[200px] w-full mt-4"
               >
-                <LogIn size={14} />
+                <LogIn size={12} />
                 Login
               </Link>
             )}
@@ -136,7 +136,7 @@ const Navbar = () => {
             <Link
               to={user ? "/dashboard" : "/login"}
               onClick={() => setIsMobileMenuOpen(false)}
-              className="bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-8 py-3.5 text-sm font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] text-center w-full max-w-xs mt-2"
+              className="bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-6 py-2.5 text-xs font-black uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] text-center max-w-[200px] w-full mt-2"
             >
               Start Analysing
             </Link>
