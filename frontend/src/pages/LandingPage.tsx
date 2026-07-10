@@ -391,11 +391,11 @@ const LandingPage = () => {
                         <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[5.5rem] font-bold mb-6 sm:mb-8 tracking-[0.05em] uppercase leading-[1.1] md:leading-[0.85]">
                             READY TO<br /><span className="text-primary italic">BROADCAST?</span>
                         </h2>
-                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-[32px] py-[14px] rounded-[4px] text-lg group">
+                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-6 py-3 sm:px-8 sm:py-3.5 text-sm sm:text-lg group">
                             Analyse Your First Match — Free
-                            <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                            <ArrowRight className="w-4 h-4 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <p className="mt-10 text-muted-foreground text-sm uppercase tracking-[0.2em] font-medium text-center">No credit card required.</p>
+                        <p className="mt-6 sm:mt-10 text-muted-foreground text-xs sm:text-sm uppercase tracking-[0.2em] font-medium text-center">No credit card required.</p>
                     </motion.div>
                 </div>
             </section>
