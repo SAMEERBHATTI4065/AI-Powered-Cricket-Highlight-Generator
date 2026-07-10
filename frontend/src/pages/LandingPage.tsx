@@ -8,10 +8,10 @@ import { useAuth } from "@/contexts/AuthContext";
 const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) => (
     <motion.div
         whileHover={{ y: -4, scale: 1.01 }}
-        className={`glass-card p-5 sm:p-8 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
+        className={`glass-card p-4 sm:p-8 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
     >
         <div>
-            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-4 sm:mb-8 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
+            <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-3 sm:mb-8 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
                 {icon}
             </div>
             <h3 className="text-sm sm:text-lg md:text-xl font-bold mb-1.5 sm:mb-3 tracking-[0.08em] leading-[1.1]">{title}</h3>
@@ -21,7 +21,7 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
             href={learnMoreUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-4 sm:mt-8 flex items-center text-[9px] sm:text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="mt-3 sm:mt-8 flex items-center text-[9px] sm:text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
         >
             Learn More <ArrowRight className="w-3 h-3 ml-2" />
         </a>
@@ -140,7 +140,7 @@ const LandingPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className="font-display text-[1.85rem] sm:text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.1] md:leading-[0.9] mb-5 sm:mb-8 tracking-[0.05em] uppercase">
+                        <h1 className="font-display text-[2.25rem] sm:text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.1] md:leading-[0.9] mb-5 sm:mb-8 tracking-[0.05em] uppercase">
                             EVERY WICKET.<br />
                             <span className="text-primary">EVERY BOUNDARY.</span><br />
                             IN MINUTES.
@@ -149,17 +149,17 @@ const LandingPage = () => {
                             Drop your match video. Get broadcast-quality highlights and a full AI report.
                             The raw energy of sports meets the precision of AI.
                         </p>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6">
-                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-6 py-2.5 sm:px-[32px] sm:py-[14px] text-xs sm:text-base">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-4 py-2 sm:px-7 sm:py-3 text-xs sm:text-base w-auto min-w-[140px]">
                                 Get Started
-                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
                             </Link>
                             <button
                                 onClick={toggleDemo}
-                                className="btn-ghost px-6 py-2.5 sm:px-[32px] sm:py-[14px] text-xs sm:text-base group"
+                                className="btn-ghost px-4 py-2 sm:px-7 sm:py-3 text-xs sm:text-base w-auto min-w-[140px] group"
                             >
                                 Watch Demo
-                                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 group-hover:fill-current transition-all" />
+                                <Play className="w-3 h-3 sm:w-4 sm:h-4 ml-1 group-hover:fill-current transition-all" />
                             </button>
                         </div>
                         <div className="mt-8 flex justify-center">
@@ -365,9 +365,9 @@ const LandingPage = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className="bg-surface/40 p-5 sm:p-8 rounded-[20px] sm:rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
+                            className="bg-surface/40 p-4 sm:p-8 rounded-[20px] sm:rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
                         >
-                            <div className="w-10 h-10 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm sm:text-xl mb-3 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
+                            <div className="w-9 h-9 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs sm:text-xl mb-2 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
                                 {member.initials}
                             </div>
                             <h3 className="text-sm sm:text-xl font-bold text-white mb-1 sm:mb-2 tracking-[0.08em]">{member.name}</h3>
@@ -393,11 +393,12 @@ const LandingPage = () => {
                         <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[5.5rem] font-bold mb-6 sm:mb-8 tracking-[0.05em] uppercase leading-[1.1] md:leading-[0.85]">
                             READY TO<br /><span className="text-primary italic">BROADCAST?</span>
                         </h2>
-                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-5 py-2.5 sm:px-8 sm:py-3.5 text-xs sm:text-lg group">
-                            Analyse Your First Match — Free
+                        <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-4 py-2 sm:px-8 sm:py-3.5 text-[10px] sm:text-lg w-auto max-w-[260px] sm:max-w-none mx-auto group">
+                            <span className="hidden sm:inline">Analyse Your First Match — Free</span>
+                            <span className="inline sm:hidden">Analyse Match Free</span>
                             <ArrowRight className="w-3.5 h-3.5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform" />
                         </Link>
-                        <p className="mt-4 sm:mt-10 text-muted-foreground/60 text-[9px] sm:text-sm uppercase tracking-[0.25em] font-bold text-center">No credit card required.</p>
+                        <p className="mt-3 sm:mt-10 text-muted-foreground/50 text-[8px] sm:text-xs uppercase tracking-[0.25em] font-medium text-center">No credit card required.</p>
                     </motion.div>
                 </div>
             </section>
