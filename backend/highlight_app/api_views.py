@@ -469,4 +469,13 @@ def test_video_info(request):
             'size_mb': 845.0
         })
 
+def serve_demo_video(request):
+    file_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'demo-video.mp4'
+    if file_path.exists() and file_path.stat().st_size > 1024 * 1024:
+        return FileResponse(open(file_path, 'rb'), content_type='video/mp4')
+        
+    # Redirect to CDN if file is missing or is an LFS pointer
+    public_url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    return redirect(public_url)
+
 

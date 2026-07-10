@@ -33,7 +33,7 @@ const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HT
         <div className="relative w-full h-full bg-black">
             <video
                 ref={videoRef}
-                src="/static/demo-video.mp4"
+                src="/api/demo-video/"
                 className="absolute inset-0 w-full h-full object-cover"
                 autoPlay
                 muted
