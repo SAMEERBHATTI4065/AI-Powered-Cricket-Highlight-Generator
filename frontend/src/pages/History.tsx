@@ -471,20 +471,20 @@ export default function History() {
                                                     )}
 
                                                     {/* Dynamic Stats Row matches user's mockup stats */}
-                                                    <div className="bg-black/20 border border-white/5 rounded-lg py-2 px-3 mb-4 w-full flex items-center justify-between text-[10px] font-mono text-white/60">
-                                                        <span className="flex items-center gap-1">
+                                                    <div className="bg-black/20 border border-white/5 rounded-lg py-2 px-2.5 mb-4 w-full flex flex-wrap items-center justify-between gap-1.5 text-[9px] sm:text-[10px] font-mono text-white/60">
+                                                        <span className="flex items-center gap-0.5">
                                                             Wkts: <strong className="text-white font-bold">{wickets}</strong>
                                                         </span>
-                                                        <span className="w-px h-3 bg-white/5" />
-                                                        <span className="flex items-center gap-1">
+                                                        <span className="hidden sm:inline w-px h-3 bg-white/5" />
+                                                        <span className="flex items-center gap-0.5">
                                                             Sixes: <strong className="text-white font-bold">{sixes}</strong>
                                                         </span>
-                                                        <span className="w-px h-3 bg-white/5" />
-                                                        <span className="flex items-center gap-1">
+                                                        <span className="hidden sm:inline w-px h-3 bg-white/5" />
+                                                        <span className="flex items-center gap-0.5">
                                                             Fours: <strong className="text-white font-bold">{fours}</strong>
                                                         </span>
-                                                        <span className="w-px h-3 bg-white/5" />
-                                                        <span className="flex items-center gap-1">
+                                                        <span className="hidden sm:inline w-px h-3 bg-white/5" />
+                                                        <span className="flex items-center gap-0.5">
                                                             Boundaries: <strong className="text-white font-bold">{boundaries}</strong>
                                                         </span>
                                                     </div>

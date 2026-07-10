@@ -498,11 +498,11 @@ const ResultsPage = () => {
           </h1>
 
           {/* Centered Stats Bar */}
-          <div className="flex items-center justify-center gap-6 sm:gap-10 bg-white/[0.02] backdrop-blur-2xl border border-white/5 py-4 px-8 sm:py-6 sm:px-12 rounded-[24px] sm:rounded-[32px] shadow-2xl">
+          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-10 bg-white/[0.02] backdrop-blur-2xl border border-white/5 py-3 px-6 sm:py-6 sm:px-12 rounded-[20px] sm:rounded-[32px] shadow-2xl">
             <StatItem label="Wkts" value={stats.totalWickets} delay={0.4} />
-            <div className="w-px h-10 sm:h-12 bg-white/5" />
+            <div className="hidden sm:block w-px h-10 sm:h-12 bg-white/5" />
             <StatItem label="Sixes" value={stats.six} delay={0.5} />
-            <div className="w-px h-10 sm:h-12 bg-white/5" />
+            <div className="hidden sm:block w-px h-10 sm:h-12 bg-white/5" />
             <StatItem label="Fours" value={stats.four} delay={0.6} />
           </div>
         </motion.div>
@@ -645,15 +645,15 @@ const ResultsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-[-10px] sm:mt-[-15px] z-20 relative"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-[-10px] sm:mt-[-15px] z-20 relative w-full max-w-[480px] sm:max-w-none mx-auto"
         >
           <motion.div
             whileHover={{ scale: 1.02 }}
-            className="relative"
+            className="relative w-full sm:w-auto"
           >
             <button
               onClick={handleDownloadVideo}
-              className="group relative h-9 sm:h-10 px-4 sm:px-6 bg-[#00FF87] text-[#080B0F] font-bold uppercase tracking-[0.22em] rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,255,135,0.4)] overflow-hidden text-[10px]"
+              className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-6 bg-[#00FF87] text-[#080B0F] font-bold uppercase tracking-[0.22em] rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,255,135,0.4)] overflow-hidden text-[10px]"
             >
               {/* Scanline Overlay */}
               <div className="absolute inset-0 hud-noise-overlay group-hover:opacity-30 transition-opacity" />
@@ -661,7 +661,7 @@ const ResultsPage = () => {
               {/* Inner Glow (Simulated) */}
               <div className="absolute inset-0 shadow-[inset_0_0_10px_rgba(255,255,255,0.4)] pointer-events-none" />
 
-              <div className="relative flex items-center gap-2">
+              <div className="relative flex items-center gap-2 justify-center">
                 <Download className="w-3.5 h-3.5 stroke-[2.5px]" />
                 <span className="mt-0.5">Download Highlight Reel</span>
               </div>
@@ -673,12 +673,12 @@ const ResultsPage = () => {
 
           <button
             onClick={handleCopyLink}
-            className="group relative h-9 sm:h-10 px-4 sm:px-6 bg-[#111820] text-white border border-white/12 hover:border-[#00FF87] hover:text-[#00FF87] font-bold uppercase tracking-[0.22em] rounded-md transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden text-[10px]"
+            className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-6 bg-[#111820] text-white border border-white/12 hover:border-[#00FF87] hover:text-[#00FF87] font-bold uppercase tracking-[0.22em] rounded-md transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden text-[10px]"
           >
             {/* Scan Sweep Animation */}
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-[#00FF87]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
 
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex items-center gap-2 justify-center">
               <Share2 className="w-3.5 h-3.5 transition-colors" />
               <span className="mt-0.5">Share Intel</span>
             </div>
@@ -691,7 +691,7 @@ const ResultsPage = () => {
             hidden: { opacity: 0, y: 50 },
             visible: { opacity: 1, y: 0, transition: { duration: 1, delay: 0.6 } }
           }}
-          className="p-8 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[24px] sm:rounded-[36px] relative group text-left w-full max-w-[850px] mx-auto mt-6 shadow-2xl"
+          className="p-5 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[20px] sm:rounded-[36px] relative group text-left w-full max-w-[850px] mx-auto mt-6 shadow-2xl"
         >
           <div className="absolute top-0 right-1/4 w-[30%] h-1.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(0,255,135,0.02),transparent_40%)] pointer-events-none rounded-[24px] sm:rounded-[36px]" />
