@@ -17,6 +17,8 @@ __pycache__/
 
 # Media and Data (Bhari files jo Docker Hub par nahi bhejni)
 media/
+!media/uploads/.gitkeep
+!media/uploads/cricket_full_match.mp4
 backend/media/
 postgres_data/
 logs/
