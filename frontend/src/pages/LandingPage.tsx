@@ -8,20 +8,20 @@ import { useAuth } from "@/contexts/AuthContext";
 const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) => (
     <motion.div
         whileHover={{ y: -4, scale: 1.01 }}
-        className={`glass-card p-10 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
+        className={`glass-card p-6 sm:p-10 flex flex-col justify-between group h-full ${size === "large" ? "md:col-span-2" : ""}`}
     >
         <div>
-            <div className="w-14 h-14 rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-10 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-surface border border-white/5 flex items-center justify-center mb-6 sm:mb-10 text-primary group-hover:shadow-[0_0_30px_rgba(0,200,117,0.2)] transition-all">
                 {icon}
             </div>
-            <h3 className="text-xl font-bold mb-3 tracking-[0.08em] leading-[1.1]">{title}</h3>
-            <p className="text-muted-foreground text-xs sm:text-sm leading-[1.6] tracking-[0.02em]">{desc}</p>
+            <h3 className="text-base sm:text-xl font-bold mb-2 sm:mb-3 tracking-[0.08em] leading-[1.1]">{title}</h3>
+            <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-[1.6] tracking-[0.02em]">{desc}</p>
         </div>
         <a
             href={learnMoreUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-10 flex items-center text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+            className="mt-6 sm:mt-10 flex items-center text-[9px] sm:text-[10px] uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transition-opacity"
         >
             Learn More <ArrowRight className="w-3 h-3 ml-2" />
         </a>
@@ -119,7 +119,7 @@ const LandingPage = () => {
             <Navbar />
 
             {/* --- Section 1: Hero --- */}
-            <section className="relative h-[110vh] flex items-center justify-center overflow-hidden">
+            <section className="relative min-h-[90vh] lg:h-[110vh] flex items-center justify-center overflow-hidden pt-28 pb-12 lg:py-0">
                 <motion.div
                     style={{ opacity: heroOpacity, scale: heroScale }}
                     className="absolute inset-0 z-0"
@@ -138,26 +138,26 @@ const LandingPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
-                        <h1 className="font-display text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.0] md:leading-[0.9] mb-8 tracking-[0.05em] uppercase">
+                        <h1 className="font-display text-2xl sm:text-4xl md:text-5xl lg:text-[4.5rem] xl:text-[5.5rem] font-bold leading-[1.1] md:leading-[0.9] mb-5 sm:mb-8 tracking-[0.05em] uppercase">
                             EVERY WICKET.<br />
                             <span className="text-primary">EVERY BOUNDARY.</span><br />
                             IN MINUTES.
                         </h1>
-                        <p className="font-body text-base md:text-lg text-muted-foreground max-w-2xl mx-auto mb-10 leading-[1.6] tracking-[0.02em] font-light">
+                        <p className="font-body text-xs sm:text-sm md:text-lg text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-[1.6] tracking-[0.02em] font-light">
                             Drop your match video. Get broadcast-quality highlights and a full AI report.
                             The raw energy of sports meets the precision of AI.
                         </p>
-                        <div className="flex flex-col md:flex-row items-center justify-center gap-6">
-                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-[32px] py-[14px] rounded-[4px] text-base">
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6">
+                            <Link to={user ? "/dashboard" : "/login"} className="btn-primary w-full sm:w-auto px-[24px] sm:px-[32px] py-[10px] sm:py-[14px] rounded-[4px] text-xs sm:text-base">
                                 Get Started
-                                <ArrowRight className="w-5 h-5" />
+                                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                             </Link>
                             <button
                                 onClick={toggleDemo}
-                                className="btn-ghost px-[32px] py-[14px] rounded-[4px] text-base group"
+                                className="btn-ghost w-full sm:w-auto px-[24px] sm:px-[32px] py-[10px] sm:py-[14px] rounded-[4px] text-xs sm:text-base group"
                             >
                                 Watch Demo
-                                <Play className="w-4 h-4 ml-1 group-hover:fill-current transition-all" />
+                                <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1 group-hover:fill-current transition-all" />
                             </button>
                         </div>
                         <div className="mt-8 flex justify-center">
@@ -174,38 +174,38 @@ const LandingPage = () => {
             </section>
 
             {/* --- Section 2: The Living Demo --- */}
-            <section ref={demoRef} className="py-[80px] container mx-auto px-6">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-24 items-center">
+            <section ref={demoRef} className="py-[40px] sm:py-[80px] container mx-auto px-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-24 items-center">
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-4 block">PROVEN PERFORMANCE</span>
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-6 leading-[1.1] tracking-[0.08em]">THE LIVING DEMO.</h2>
-                        <p className="text-muted-foreground text-sm sm:text-base mb-8 leading-[1.6] tracking-[0.02em]">
+                        <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2 sm:mb-4 block">PROVEN PERFORMANCE</span>
+                        <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6 leading-[1.1] tracking-[0.08em]">THE LIVING DEMO.</h2>
+                        <p className="text-muted-foreground text-xs sm:text-sm md:text-base mb-6 sm:mb-8 leading-[1.6] tracking-[0.02em]">
                             Why explain when we can show? On the left, hours of raw broadcast. On the right,
                             the surgical precision of CricketAI. We don't just find events; we package them for global consumption.
                         </p>
-                        <div className="space-y-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <CheckCircle2 className="w-5 h-5" />
+                        <div className="space-y-4 sm:space-y-6">
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
-                                <span className="text-sm font-medium leading-[1.6] tracking-[0.02em]">Frame-perfect boundary detection</span>
+                                <span className="text-xs sm:text-sm font-medium leading-[1.6] tracking-[0.02em]">Frame-perfect boundary detection</span>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <CheckCircle2 className="w-5 h-5" />
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
-                                <span className="text-sm font-medium leading-[1.6] tracking-[0.02em]">Automated wicket reel generation</span>
+                                <span className="text-xs sm:text-sm font-medium leading-[1.6] tracking-[0.02em]">Automated wicket reel generation</span>
                             </div>
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                    <CheckCircle2 className="w-5 h-5" />
+                            <div className="flex items-center gap-3 sm:gap-4">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                                 </div>
-                                <span className="text-sm font-medium leading-[1.6] tracking-[0.02em]">Broadcast-ready summary reports</span>
+                                <span className="text-xs sm:text-sm font-medium leading-[1.6] tracking-[0.02em]">Broadcast-ready summary reports</span>
                             </div>
                         </div>
                     </motion.div>
@@ -228,23 +228,23 @@ const LandingPage = () => {
             </section>
 
             {/* --- Section 3: How It Works --- */}
-            <section className="py-[80px] bg-surface/20 border-y border-white/5 relative overflow-hidden">
+            <section className="py-[40px] sm:py-[80px] bg-surface/20 border-y border-white/5 relative overflow-hidden">
                 <div className="container mx-auto px-6">
-                    <div className="flex flex-col lg:flex-row items-end justify-between mb-24 gap-8">
+                    <div className="flex flex-col lg:flex-row items-center lg:items-end justify-between mb-12 sm:mb-24 gap-6 sm:gap-8 text-center lg:text-left">
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}
                             transition={{ duration: 0.8 }}
-                            className="max-w-2xl"
+                            className="max-w-2xl mx-auto lg:mx-0"
                         >
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-4 block">THE PIPELINE</span>
-                            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold leading-[1.1] tracking-[0.08em]">FOUR STEPS TO<br />BROADCAST GOLD.</h2>
+                            <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2 sm:mb-4 block">THE PIPELINE</span>
+                            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold leading-[1.1] tracking-[0.08em]">FOUR STEPS TO<br />BROADCAST GOLD.</h2>
                         </motion.div>
-                        <p className="text-muted-foreground text-sm max-w-xs mb-4 leading-[1.6] tracking-[0.02em]">A complete horizontal journey from raw file to premium export.</p>
+                        <p className="text-muted-foreground text-xs sm:text-sm max-w-xs mb-2 sm:mb-4 leading-[1.6] tracking-[0.02em] mx-auto lg:mx-0">A complete horizontal journey from raw file to premium export.</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 relative">
                         {/* Desktop Connector Line */}
                         <div className="hidden lg:block absolute top-[4.5rem] left-[10%] right-[10%] h-[1px] bg-gradient-to-r from-primary/10 via-primary/40 to-primary/10 z-0" />
 
@@ -261,18 +261,18 @@ const LandingPage = () => {
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                                 whileHover={{ y: -12 }}
-                                className="glass-card p-10 group cursor-default relative z-10 hover:shadow-[0_20px_40px_rgba(0,255,135,0.1)]"
+                                className="glass-card p-6 sm:p-10 group cursor-default relative z-10 hover:shadow-[0_20px_40px_rgba(0,255,135,0.1)]"
                             >
-                                <div className="flex justify-between items-start mb-10">
-                                    <div className="text-5xl filter drop-shadow-[0_0_15px_rgba(0,255,135,0.5)] group-hover:scale-110 transition-transform duration-500">
+                                <div className="flex justify-between items-start mb-6 sm:mb-10">
+                                    <div className="text-3xl sm:text-5xl filter drop-shadow-[0_0_15px_rgba(0,255,135,0.5)] group-hover:scale-110 transition-transform duration-500">
                                         {item.icon}
                                     </div>
-                                    <span className="text-xs font-mono font-bold text-primary px-3 py-1 rounded-full bg-primary/10 border border-primary/20 shadow-[0_0_10px_rgba(0,255,135,0.2)]">
+                                    <span className="text-[10px] sm:text-xs font-mono font-bold text-primary px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/10 border border-primary/20 shadow-[0_0_10px_rgba(0,255,135,0.2)]">
                                         {item.step}
                                     </span>
                                 </div>
-                                <h3 className="text-xl font-bold mb-3 tracking-[0.08em] leading-[1.1]">{item.title}</h3>
-                                <p className="text-xs sm:text-sm text-muted-foreground leading-[1.6] tracking-[0.02em]">{item.desc}</p>
+                                <h3 className="text-base sm:text-xl font-bold mb-2 sm:mb-3 tracking-[0.08em] leading-[1.1]">{item.title}</h3>
+                                <p className="text-[11px] sm:text-xs md:text-sm text-muted-foreground leading-[1.6] tracking-[0.02em]">{item.desc}</p>
 
                                 {/* Connector Arrow for Desktop */}
                                 {idx < 3 && (
@@ -363,14 +363,14 @@ const LandingPage = () => {
                             viewport={{ once: true }}
                             transition={{ duration: 0.6, delay: idx * 0.1 }}
                             whileHover={{ y: -5 }}
-                            className="bg-surface/40 p-10 rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
+                            className="bg-surface/40 p-6 sm:p-10 rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
                         >
-                            <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xl mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
+                            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-lg sm:text-xl mb-4 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
                                 {member.initials}
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-2 tracking-[0.08em]">{member.name}</h3>
-                            <p className="text-primary text-xs font-semibold mb-3 tracking-[0.02em]">{member.role}</p>
-                            <p className="text-muted-foreground text-xs sm:text-sm leading-[1.6] tracking-[0.02em]">{member.bio}</p>
+                            <h3 className="text-base sm:text-xl font-bold text-white mb-1 sm:mb-2 tracking-[0.08em]">{member.name}</h3>
+                            <p className="text-primary text-[10px] sm:text-xs font-semibold mb-2 sm:mb-3 tracking-[0.02em]">{member.role}</p>
+                            <p className="text-muted-foreground text-[11px] sm:text-xs md:text-sm leading-[1.6] tracking-[0.02em]">{member.bio}</p>
                         </motion.div>
                     ))}
                 </div>
@@ -388,7 +388,7 @@ const LandingPage = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-[5.5rem] font-bold mb-8 tracking-[0.05em] uppercase leading-[1.0] md:leading-[0.85]">
+                        <h2 className="text-2xl sm:text-4xl md:text-5xl lg:text-[5.5rem] font-bold mb-6 sm:mb-8 tracking-[0.05em] uppercase leading-[1.1] md:leading-[0.85]">
                             READY TO<br /><span className="text-primary italic">BROADCAST?</span>
                         </h2>
                         <Link to={user ? "/dashboard" : "/login"} className="btn-primary px-[32px] py-[14px] rounded-[4px] text-lg group">
