@@ -21,6 +21,7 @@ urlpatterns = [
     # User History
     path('auth/history/', auth_views.history_view, name='api_history'),
     path('test-video-info/', api_views.test_video_info, name='api_test_video_info'),
+    path('demo-video/', api_views.serve_demo_video, name='api_serve_demo_video'),
 ]
 
 
