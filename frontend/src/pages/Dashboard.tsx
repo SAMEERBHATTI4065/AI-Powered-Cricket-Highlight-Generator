@@ -412,7 +412,7 @@ const Dashboard = () => {
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: [0, 1.2, 1], opacity: 1 }}
                             transition={{ duration: 0.8, delay: 3.5, type: "spring" }}
-                            className="text-[15rem] md:text-[25rem] font-bold text-primary italic drop-shadow-[0_0_50px_rgba(0,255,135,0.5)]"
+                            className="text-[6rem] sm:text-[10rem] md:text-[25rem] font-bold text-primary italic drop-shadow-[0_0_50px_rgba(0,255,135,0.5)]"
                         >
                             SIX!
                         </motion.h1>
@@ -422,7 +422,7 @@ const Dashboard = () => {
                             initial={{ opacity: 0, y: 50 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 1, delay: 5.5 }}
-                            className="text-center mt-[-50px] z-10"
+                            className="text-center mt-[-20px] md:mt-[-50px] z-10"
                         >
                             <h2 className="text-4xl font-bold mb-4 tracking-[0.1em] uppercase">Analysis Complete</h2>
                             <p className="text-primary text-xl mb-10 tracking-[0.05em]">Your highlights are ready</p>
