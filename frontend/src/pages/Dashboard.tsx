@@ -578,7 +578,7 @@ const Dashboard = () => {
                         <DashboardDemoVideo />
 
                         {/* Circular Upload/File Zone */}
-                        <div className="relative flex items-center justify-center w-[220px] h-[220px] sm:w-[270px] sm:h-[270px] md:w-[310px] md:h-[310px] shrink-0">
+                        <div className="relative flex items-center justify-center w-[180px] h-[180px] sm:w-[250px] sm:h-[250px] md:w-[310px] md:h-[310px] shrink-0">
                             {/* Concentric Pulsing Rings */}
                             {[1, 2].map((r) => (
                                 <div
@@ -633,14 +633,14 @@ const Dashboard = () => {
                                             key="file"
                                             initial={{ opacity: 0, scale: 0.9 }}
                                             animate={{ opacity: 1, scale: 1 }}
-                                            className="z-10 flex flex-col items-center px-6"
+                                            className="z-10 flex flex-col items-center px-4"
                                         >
-                                            <Film className="w-12 h-12 sm:w-16 sm:h-16 text-primary mb-5 animate-pulse" />
-                                            <h3 className="text-xl sm:text-2xl font-bold tracking-[0.1em] uppercase mb-2 max-w-[200px] sm:max-w-[250px] truncate">
+                                            <Film className="w-8 h-8 sm:w-12 sm:h-12 text-primary mb-3 animate-pulse" />
+                                            <h3 className="text-[11px] sm:text-sm font-bold tracking-[0.08em] uppercase mb-1 max-w-[130px] sm:max-w-[200px] truncate">
                                                 {isDemoMode ? demoFileName : file?.name}
                                             </h3>
-                                            <p className="text-primary font-mono text-sm sm:text-base tracking-wider">
-                                                {isDemoMode ? `${demoFileSizeMb.toFixed(1)} MB READY (DEMO MATCH)` : `${((file?.size || 0) / (1024 * 1024)).toFixed(1)} MB READY`}
+                                            <p className="text-primary font-mono text-[9px] sm:text-xs tracking-wider">
+                                                {isDemoMode ? `${demoFileSizeMb.toFixed(1)} MB READY` : `${((file?.size || 0) / (1024 * 1024)).toFixed(1)} MB READY`}
                                             </p>
                                         </motion.div>
                                     ) : (
@@ -648,13 +648,13 @@ const Dashboard = () => {
                                             key="empty"
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            className="z-10 flex flex-col items-center px-4"
+                                            className="z-10 flex flex-col items-center px-3"
                                         >
-                                            <Upload className="w-10 h-10 sm:w-14 sm:h-14 text-primary/40 mb-5 group-hover:text-primary transition-colors duration-500" />
-                                            <h3 className="text-lg sm:text-xl font-bold tracking-[0.15em] uppercase mb-2 leading-none">
+                                            <Upload className="w-7 h-7 sm:w-10 sm:h-10 text-primary/40 mb-3 group-hover:text-primary transition-colors duration-500" />
+                                            <h3 className="text-xs sm:text-sm font-bold tracking-[0.12em] uppercase mb-1 leading-none">
                                                 {isDragging ? "RELEASE TO ANALYSE" : "DROP MATCH VIDEO"}
                                             </h3>
-                                            <p className="text-[#00FF87] text-[0.65rem] sm:text-[0.75rem] uppercase tracking-[0.2em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">
+                                            <p className="text-[#00FF87] text-[8px] sm:text-[10px] uppercase tracking-[0.15em] font-bold opacity-80 group-hover:opacity-100 transition-opacity">
                                                 {isDragging ? "POWERING UP..." : "SUBCONSCIOUS RADAR ACTIVE"}
                                             </p>
                                         </motion.div>
@@ -665,17 +665,17 @@ const Dashboard = () => {
 
                         {/* Removed format hint text per user request */}
 
-                        {/* Redesigned Controls Bar */}
+                        {/* Start Process Button — centered below circle */}
                         <AnimatePresence>
                             {(file || isDemoMode) && (
                                 <motion.div
-                                    initial={{ y: 50, opacity: 0 }}
+                                    initial={{ y: 20, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
-                                    className="fixed bottom-0 left-0 right-0 bg-black/70 backdrop-blur-xl border-t border-border/50 py-2 px-4 flex items-center justify-center z-[100]"
+                                    className="mt-6 flex items-center justify-center z-10"
                                 >
                                     <button
                                         onClick={handleProcess}
-                                        className="btn-primary rounded-lg px-6 sm:px-10 h-8 sm:h-10 text-[10px] sm:text-xs uppercase tracking-[0.15em] font-bold shadow-[0_0_18px_rgba(0,255,135,0.2)] hover:shadow-[0_0_28px_rgba(0,255,135,0.35)] transition-all"
+                                        className="btn-primary rounded-lg px-8 sm:px-10 h-8 sm:h-10 text-[10px] sm:text-xs uppercase tracking-[0.15em] font-bold shadow-[0_0_18px_rgba(0,255,135,0.2)] hover:shadow-[0_0_28px_rgba(0,255,135,0.35)] transition-all"
                                     >
                                         Start Process
                                     </button>
@@ -709,11 +709,11 @@ const Dashboard = () => {
                                         key={isUploading ? uploadProgress : progress}
                                         initial={{ scale: 0.9, opacity: 0.8 }}
                                         animate={{ scale: 1, opacity: 1 }}
-                                        className={`${isSmallScreen ? 'text-4xl' : isMediumScreen ? 'text-5xl' : 'text-6xl'} font-black text-white block tracking-tighter`}
+                                        className={`${isSmallScreen ? 'text-2xl' : isMediumScreen ? 'text-4xl' : 'text-6xl'} font-black text-white block tracking-tighter`}
                                     >
                                         {isUploading ? uploadProgress : Math.round(progress)}%
                                     </motion.span>
-                                    <span className="text-[8px] uppercase tracking-[0.3em] text-primary font-bold">
+                                    <span className="text-[7px] uppercase tracking-[0.2em] text-primary font-bold">
                                         {isUploading ? "Uploading" : "Analysing"}
                                     </span>
 
@@ -724,10 +724,10 @@ const Dashboard = () => {
                                             animate={{ opacity: 1 }}
                                             className="mt-1 flex items-center justify-center gap-1"
                                         >
-                                            <span className="text-primary text-sm font-black">{verifiedCount}</span>
-                                            <span className="text-white/30 text-[10px]">/</span>
-                                            <span className="text-white/50 text-[10px] font-bold">{totalEvents}</span>
-                                            <span className="text-white/30 text-[7px] uppercase tracking-widest">Events</span>
+                                            <span className="text-primary text-xs font-black">{verifiedCount}</span>
+                                            <span className="text-white/30 text-[8px]">/</span>
+                                            <span className="text-white/50 text-[8px] font-bold">{totalEvents}</span>
+                                            <span className="text-white/30 text-[6px] uppercase tracking-widest">Events</span>
                                         </motion.div>
                                     )}
                                 </div>
