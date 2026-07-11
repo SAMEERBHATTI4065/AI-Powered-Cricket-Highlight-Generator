@@ -470,7 +470,13 @@ def test_video_info(request):
         })
 
 def serve_demo_video(request):
+    # Try demo-video.mp4 first, then fallback to demo.mp4
     file_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'demo-video.mp4'
+    if not file_path.exists() or file_path.stat().st_size <= 1024 * 1024:
+        alt_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'demo.mp4'
+        if alt_path.exists() and alt_path.stat().st_size > 1024 * 1024:
+            file_path = alt_path
+
     if file_path.exists() and file_path.stat().st_size > 1024 * 1024:
         # Use HTTP Range requests for smooth video streaming and compatibility
         range_header = request.META.get('HTTP_RANGE', '').strip()

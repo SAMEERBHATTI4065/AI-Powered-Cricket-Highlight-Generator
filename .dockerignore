@@ -17,9 +17,6 @@ __pycache__/
 
 # Media and Data (Bhari files jo Docker Hub par nahi bhejni)
 media/
-!media/uploads/.gitkeep
-!media/uploads/cricket_full_match.mp4
-!backend/static/demo/demo-video.mp4
 backend/media/
 postgres_data/
 logs/
@@ -31,6 +28,12 @@ uploads/
 *.mp4
 *.avi
 *.mkv
+
+# Exceptions to exclusions (must be at the bottom so they are not overridden by general wildcards above)
+!media/uploads/.gitkeep
+!media/uploads/cricket_full_match.mp4
+!backend/static/demo/demo-video.mp4
+!backend/static/demo/demo.mp4
 
 # OS related
 .DS_Store

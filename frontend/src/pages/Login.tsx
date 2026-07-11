@@ -106,67 +106,67 @@ export default function Login() {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12 md:p-16 z-20">
                 <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-[#00FF87]/5 rounded-full blur-[140px] pointer-events-none z-0" />
 
-                <div className="w-full max-w-md bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-5 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
+                <div className="w-full max-w-md bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-[24px] p-4 sm:p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
                     {/* Header */}
-                    <div className="mb-8">
-                        <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
-                            <div className="w-10 h-10 rounded-xl bg-[#00FF87]/15 flex items-center justify-center border border-[#00FF87]/20 group-hover:border-[#00FF87]/40 transition-colors">
-                                <Zap className="w-5 h-5 text-[#00FF87]" />
+                    <div className="mb-5">
+                        <Link to="/" className="inline-flex items-center gap-2 mb-4 group">
+                            <div className="w-8 h-8 rounded-lg bg-[#00FF87]/15 flex items-center justify-center border border-[#00FF87]/20 group-hover:border-[#00FF87]/40 transition-colors">
+                                <Zap className="w-4 h-4 text-[#00FF87]" />
                             </div>
-                            <span className="font-display text-2xl font-bold tracking-[0.06em] text-white">
+                            <span className="font-display text-xl font-bold tracking-[0.06em] text-white">
                                 Cricket<span className="text-[#00FF87]">AI</span>
                             </span>
                         </Link>
 
-                        <h1 className="text-3xl font-display font-bold tracking-wide mb-2 uppercase">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl font-display font-bold tracking-wide mb-1 uppercase">
                             Welcome Back
                         </h1>
-                        <p className="text-white/50 text-[11px] leading-relaxed">
+                        <p className="text-white/50 text-[10px] leading-relaxed">
                             Sign in to access your video highlights generator, AI reports dashboard, and match run archives.
                         </p>
                     </div>
 
                     {/* Form */}
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-3">
                         {/* Username */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <label className="text-[9px] uppercase tracking-wider text-white/40 font-bold block">
                                 Username
                             </label>
                             <div className="relative group">
-                                <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                <User size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
                                 <input
                                     type="text"
                                     placeholder="Enter username"
                                     value={username}
                                     onChange={e => setUsername(e.target.value)}
                                     required
-                                    className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-11 pr-4 py-3 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                    className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-11 pr-4 py-2.5 rounded-xl text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                 />
                             </div>
                         </div>
 
                         {/* Password */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-1">
                             <label className="text-[9px] uppercase tracking-wider text-white/40 font-bold block">
                                 Password
                             </label>
                             <div className="relative group">
-                                <Lock size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                <Lock size={13} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
                                 <input
                                     type="password"
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     required
-                                    className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-11 pr-4 py-3 rounded-xl text-white placeholder-white/20 text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                    className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-11 pr-4 py-2.5 rounded-xl text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                 />
                             </div>
                         </div>
 
                         {error && (
-                            <div className="flex items-center gap-2.5 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                                <AlertCircle size={14} className="shrink-0" />
+                            <div className="flex items-center gap-2 text-red-400 text-xs bg-red-500/10 border border-red-500/20 rounded-xl px-3 py-2.5">
+                                <AlertCircle size={13} className="shrink-0" />
                                 <span>{error}</span>
                             </div>
                         )}
@@ -174,24 +174,24 @@ export default function Login() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3.5 mt-2 rounded-xl bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_20px_rgba(0,255,135,0.3)] text-black font-black text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
+                            className="w-full py-2.5 mt-1 rounded-xl bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_20px_rgba(0,255,135,0.3)] text-black font-black text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                         >
-                            {loading && <Loader2 size={14} className="animate-spin" />}
+                            {loading && <Loader2 size={13} className="animate-spin" />}
                             <span>Access Your Dashboard</span>
-                            <ArrowRight size={14} />
+                            <ArrowRight size={13} />
                         </button>
                     </form>
 
                     {/* Social Logins */}
-                    <div className="mt-6 flex flex-col items-center">
-                        <div className="relative flex items-center justify-center mb-5 w-full">
+                    <div className="mt-5 flex flex-col items-center">
+                        <div className="relative flex items-center justify-center mb-4 w-full">
                             <div className="absolute inset-0 w-full border-t border-white/5" />
-                            <span className="relative z-10 bg-[#0b121e] px-3.5 text-white/30 text-[9px] uppercase tracking-widest font-black">
+                            <span className="relative z-10 bg-[#0b121e] px-3 text-white/30 text-[9px] uppercase tracking-widest font-black">
                                 Or Continue With
                             </span>
                         </div>
 
-                        <div className="w-full space-y-3">
+                        <div className="w-full space-y-2.5">
                             <div className="w-full flex justify-center">
                                 <div id="google-signin-btn" className="w-full flex justify-center" />
                             </div>
@@ -199,7 +199,7 @@ export default function Login() {
                             <button
                                 type="button"
                                 onClick={() => handleSocialLogin('Facebook')}
-                                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-white/5 hover:border-white/10 bg-[#0B1525]/30 hover:bg-[#0B1525]/50 transition-all text-xs font-bold cursor-pointer"
+                                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/5 hover:border-white/10 bg-[#0B1525]/30 hover:bg-[#0B1525]/50 transition-all text-xs font-bold cursor-pointer"
                             >
                                 <svg className="w-3.5 h-3.5 fill-[#1877F2] shrink-0" viewBox="0 0 24 24">
                                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -210,7 +210,7 @@ export default function Login() {
                     </div>
 
                     {/* Toggle */}
-                    <p className="text-center text-xs text-white/30 mt-8 font-medium">
+                    <p className="text-center text-xs text-white/30 mt-6 font-medium">
                         Don't have an account?{' '}
                         <Link to="/signup" className="text-[#00FF87] hover:text-[#33ff9f] font-bold transition-colors">
                             Sign up free

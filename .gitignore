@@ -85,5 +85,6 @@ frontend/.vite/
 # Exceptions
 !frontend/public/demo-video.mp4
 !backend/static/demo/demo-video.mp4
+!backend/static/demo/demo.mp4
 !media/uploads/.gitkeep
 
