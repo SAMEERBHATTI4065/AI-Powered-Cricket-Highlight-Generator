@@ -122,13 +122,13 @@ const Navbar = () => {
               </div>
 
               {/* Navigation Links */}
-              <div className="flex flex-col gap-4 mt-2">
+              <div className="flex flex-col gap-3 mt-2">
                 {navLinks.map((link) => (
                   <Link
                     key={link.name}
                     to={link.path}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`text-base font-mono uppercase tracking-[0.2em] font-semibold transition-colors hover:text-primary ${
+                    className={`text-sm font-mono uppercase tracking-[0.15em] font-semibold transition-colors hover:text-primary ${
                       location.pathname === link.path ? "text-primary" : "text-white/80"
                     }`}
                   >
@@ -138,15 +138,15 @@ const Navbar = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-4 mt-2 border-t border-white/5 pt-5 w-full">
+              <div className="flex items-center gap-3 mt-2 border-t border-white/5 pt-4 w-full">
                 {user ? (
                   <div className="flex items-center justify-between w-full">
-                    <span className="text-xs text-white/50 font-mono truncate max-w-[120px]">Hi, {user.username}</span>
+                    <span className="text-[10px] text-white/50 font-mono truncate max-w-[120px]">Hi, {user.username}</span>
                     <button
                       onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                      className="flex items-center gap-1.5 border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300"
+                      className="flex items-center gap-1 border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500/5 px-3 py-1.5 text-[9px] font-bold uppercase tracking-widest rounded-full transition-all duration-300"
                     >
-                      <LogOut size={10} />
+                      <LogOut size={9} />
                       Logout
                     </button>
                   </div>
