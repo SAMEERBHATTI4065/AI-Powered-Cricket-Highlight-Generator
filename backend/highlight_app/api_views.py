@@ -421,20 +421,23 @@ def ensure_valid_demo_video():
     uploads_dir.mkdir(parents=True, exist_ok=True)
     demo_path = uploads_dir / 'cricket_full_match.mp4'
     
-    # Check if there is already a valid MP4 file (size > 1MB)
+    # 1. Check if there is already a valid MP4 file in uploads (size > 1MB)
     mp4_files = [f for f in uploads_dir.glob('*.mp4') if not f.name.startswith('.') and not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-', f.name)]
-    valid_file = None
     for f in mp4_files:
         if f.exists() and f.stat().st_size > 1024 * 1024:
-            valid_file = f
-            break
+            return f
             
-    if valid_file:
-        return valid_file
-        
-    # If no valid MP4 exists (or it is a 130-byte LFS pointer), download a small, valid 15MB sample video
+    # 2. Check local static demo paths first (demo-video.mp4, demo.mp4, cricket_full_match.mp4)
+    static_demo_dir = Path(settings.BASE_DIR) / 'static' / 'demo'
+    possible_static_files = ['demo-video.mp4', 'demo.mp4', 'cricket_full_match.mp4']
+    for filename in possible_static_files:
+        p = static_demo_dir / filename
+        if p.exists() and p.stat().st_size > 1024 * 1024:
+            return p
+
+    # 3. If no valid MP4 exists locally, download a small, valid 15MB sample video as fallback
     import urllib.request
-    logger.info("Demo video not found or invalid LFS pointer. Downloading sample video from CDN...")
+    logger.info("Demo video not found locally. Downloading sample video from CDN...")
     
     url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
     try:
@@ -451,11 +454,6 @@ def ensure_valid_demo_video():
         return demo_path
     except Exception as e:
         logger.error(f"Failed to download sample video: {e}")
-        
-    # Fallback to local static demo file if it's valid
-    fallback_path = Path(settings.BASE_DIR) / 'static' / 'demo' / 'cricket_full_match.mp4'
-    if fallback_path.exists() and fallback_path.stat().st_size > 1024 * 1024:
-        return fallback_path
         
     return None
 
