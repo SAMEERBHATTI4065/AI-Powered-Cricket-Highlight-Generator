@@ -514,30 +514,15 @@ def serve_demo_video(request):
             
         return response
         
-    # If the local file is missing or is an LFS pointer, stream/proxy from public CDN to prevent CORS/redirect errors
-    import requests
-    public_url = "https://vjs.zencdn.net/v/oceans.mp4"
-    try:
-        req_headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-        if 'HTTP_RANGE' in request.META:
-            req_headers['Range'] = request.META['HTTP_RANGE']
-            
-        r = requests.get(public_url, headers=req_headers, stream=True, timeout=15)
-        response = StreamingHttpResponse(r.iter_content(chunk_size=8192), status=r.status_code, content_type='video/mp4')
-        
-        # Propagate range headers from CDN response
-        if 'Content-Range' in r.headers:
-            response['Content-Range'] = r.headers['Content-Range']
-        if 'Accept-Ranges' in r.headers:
-            response['Accept-Ranges'] = r.headers['Accept-Ranges']
-        if 'Content-Length' in r.headers:
-            response['Content-Length'] = r.headers['Content-Length']
-        return response
-    except Exception as e:
-        logger.error(f"Failed to proxy demo video from CDN: {e}")
-        # Fallback redirect if streaming fails
-        return redirect(public_url)
+    # If the local file is missing or is an LFS pointer, do a direct redirect to CDN
+    # (proxy streaming was causing timeout issues on HF containers)
+    logger.warning(
+        f"serve_demo_video: local file missing or LFS pointer "
+        f"(size={file_path.stat().st_size if file_path.exists() else 'N/A'}). "
+        f"Redirecting to CDN fallback."
+    )
+    cdn_url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    return redirect(cdn_url)
+
 
 

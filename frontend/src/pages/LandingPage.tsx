@@ -28,9 +28,10 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
     </motion.div>
 );
 
-// Primary: teri apni cricket video (WhiteNoise static serve) — CDN sirf fallback hai
+// Priority: backend endpoint (Range-request support, serves cricket video) → CDN fallbacks
 const DEMO_VIDEO_SOURCES = [
-    "/static/demo-video.mp4",
+    "/api/demo-video/",   // backend with HTTP Range support — serves apni cricket video
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     "https://vjs.zencdn.net/v/oceans.mp4",
 ];
