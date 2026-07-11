@@ -335,8 +335,11 @@ const ResultsPage = () => {
   }, []);
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center bg-background text-primary font-display text-2xl uppercase tracking-[0.5em] animate-pulse">
-      Initialising Assembly...
+    <div className="min-h-screen flex items-center justify-center bg-background text-primary">
+      <div className="hidden sm:block font-display text-2xl uppercase tracking-[0.5em] animate-pulse">
+        Initialising Assembly...
+      </div>
+      <div className="sm:hidden w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
     </div>
   );
 
