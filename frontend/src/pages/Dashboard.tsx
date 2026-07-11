@@ -4,9 +4,10 @@ import { Upload, Film, X, ArrowRight, Loader2, Zap, LayoutGrid, Clock, Shield, C
 
 // Fast CDN sources — loads in <3 seconds
 // PERMANENT FIX: set YOUTUBE_VIDEO_ID to your YouTube video ID (upload as Unlisted)
-const YOUTUBE_VIDEO_ID = "GI34XJNvf2w"; // Set this to your own YouTube video ID
+const YOUTUBE_VIDEO_ID = ""; // Set this to your own YouTube video ID
 
 const DASHBOARD_DEMO_SOURCES = [
+    "/api/demo-video/",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     "https://vjs.zencdn.net/v/oceans.mp4",
