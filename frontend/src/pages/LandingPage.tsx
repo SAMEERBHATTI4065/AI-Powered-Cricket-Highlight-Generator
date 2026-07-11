@@ -30,7 +30,7 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
 
 // Fast CDN sources — loads in <3 seconds (no HF LFS slow redirect)
 // TO USE YOUR OWN CRICKET VIDEO: Upload to YouTube as Unlisted and update YOUTUBE_VIDEO_ID below
-const YOUTUBE_VIDEO_ID = ""; // Set this to your own YouTube video ID
+const YOUTUBE_VIDEO_ID = "GI34XJNvf2w"; // Set this to your own YouTube video ID
 
 const DEMO_VIDEO_SOURCES = [
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
