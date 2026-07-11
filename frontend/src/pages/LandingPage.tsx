@@ -28,12 +28,12 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
     </motion.div>
 );
 
-// Priority: backend endpoint (Range-request support, serves cricket video) → CDN fallbacks
+// HF LFS CDN URL first — direct, fast, no Django overhead, teri apni cricket video
 const DEMO_VIDEO_SOURCES = [
-    "/api/demo-video/",   // backend with HTTP Range support — serves apni cricket video
+    "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4",
+    "/api/demo-video/",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
-    "https://vjs.zencdn.net/v/oceans.mp4",
 ];
 
 const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HTMLVideoElement>, onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void }) => {
