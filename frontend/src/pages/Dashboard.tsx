@@ -42,18 +42,18 @@ const DashboardDemoVideo = () => {
             {/* Header row */}
             <button
                 onClick={toggleExpand}
-                className="w-full flex items-center justify-between px-5 py-3 bg-primary/10 border border-primary/30 rounded-2xl hover:bg-primary/15 transition-all group"
+                className="w-full flex items-center justify-between px-3 py-2 bg-primary/10 border border-primary/30 rounded-xl hover:bg-primary/15 transition-all group"
             >
-                <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-[11px] uppercase tracking-[0.25em] text-primary font-black">
-                        Live Demo — Watch AI Highlights In Action
+                <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-black">
+                        Live Demo — Watch AI Highlights
                     </span>
                 </div>
-                <div className="flex items-center gap-2 text-primary/60 group-hover:text-primary transition-colors">
-                    <PlayCircle className="w-4 h-4" />
+                <div className="flex items-center gap-1.5 text-primary/60 group-hover:text-primary transition-colors">
+                    <PlayCircle className="w-3.5 h-3.5" />
                     <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
-                        <ChevronDown className="w-4 h-4" />
+                        <ChevronDown className="w-3.5 h-3.5" />
                     </motion.div>
                 </div>
             </button>
@@ -578,15 +578,15 @@ const Dashboard = () => {
                         <DashboardDemoVideo />
 
                         {/* Circular Upload/File Zone */}
-                        <div className="relative flex items-center justify-center w-[260px] h-[260px] sm:w-[310px] sm:h-[310px] md:w-[350px] md:h-[350px] shrink-0">
+                        <div className="relative flex items-center justify-center w-[220px] h-[220px] sm:w-[270px] sm:h-[270px] md:w-[310px] md:h-[310px] shrink-0">
                             {/* Concentric Pulsing Rings */}
-                            {[1, 2, 3].map((r) => (
+                            {[1, 2].map((r) => (
                                 <div
                                     key={r}
-                                    className="absolute border border-primary/20 rounded-full animate-ping"
+                                    className="absolute border border-primary/15 rounded-full animate-ping"
                                     style={{
-                                        width: `${100 + r * 15}%`,
-                                        height: `${100 + r * 15}%`,
+                                        width: `${100 + r * 12}%`,
+                                        height: `${100 + r * 12}%`,
                                         animationDuration: `${3 + r}s`,
                                         animationDelay: `${r * 0.5}s`
                                     }}
@@ -663,11 +663,7 @@ const Dashboard = () => {
                             </motion.label>
                         </div>
 
-                        {!file && !isDemoMode && (
-                            <p className="mt-12 text-muted-foreground/50 text-[10px] uppercase tracking-[0.2em] font-medium">
-                                Supports MP4, MOV, AVI • Up to 4GB • HD recommended
-                            </p>
-                        )}
+                        {/* Removed format hint text per user request */}
 
                         {/* Redesigned Controls Bar */}
                         <AnimatePresence>
@@ -675,11 +671,11 @@ const Dashboard = () => {
                                 <motion.div
                                     initial={{ y: 50, opacity: 0 }}
                                     animate={{ y: 0, opacity: 1 }}
-                                    className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-xl border-t border-border/80 py-3 sm:py-4 px-6 flex items-center justify-center z-[100]"
+                                    className="fixed bottom-0 left-0 right-0 bg-black/70 backdrop-blur-xl border-t border-border/50 py-2 px-4 flex items-center justify-center z-[100]"
                                 >
                                     <button
                                         onClick={handleProcess}
-                                        className="btn-primary rounded-lg px-8 sm:px-12 h-10 sm:h-12 text-xs sm:text-sm uppercase tracking-[0.15em] font-bold shadow-[0_0_35px_rgba(0,255,135,0.25)] hover:shadow-[0_0_50px_rgba(0,255,135,0.45)] transition-all"
+                                        className="btn-primary rounded-lg px-6 sm:px-10 h-8 sm:h-10 text-[10px] sm:text-xs uppercase tracking-[0.15em] font-bold shadow-[0_0_18px_rgba(0,255,135,0.2)] hover:shadow-[0_0_28px_rgba(0,255,135,0.35)] transition-all"
                                     >
                                         Start Process
                                     </button>
@@ -690,10 +686,10 @@ const Dashboard = () => {
                 ) : (
                     /* Mission Control Screen (Processing State) */
                     <div className="w-full flex flex-col gap-8 items-center justify-center py-6 sm:py-10">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center justify-items-center w-full max-w-6xl">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center justify-items-center w-full max-w-6xl">
 
                             {/* Left: Circular Progress & Stages */}
-                            <div className="relative flex items-center justify-center" style={{ height: isSmallScreen ? '310px' : isMediumScreen ? '410px' : '440px', width: isSmallScreen ? '310px' : isMediumScreen ? '410px' : '440px' }}>
+                            <div className="relative flex items-center justify-center" style={{ height: isSmallScreen ? '260px' : isMediumScreen ? '360px' : '420px', width: isSmallScreen ? '260px' : isMediumScreen ? '360px' : '420px' }}>
                                 {/* Progress Ring */}
                                 <svg className="absolute -rotate-90" style={{ width: `${svgSize}px`, height: `${svgSize}px` }}>
                                     <circle cx={svgCenter} cy={svgCenter} r={svgRadius} fill="none" stroke="currentColor" strokeWidth="2" className="text-white/5" />
@@ -713,11 +709,11 @@ const Dashboard = () => {
                                         key={isUploading ? uploadProgress : progress}
                                         initial={{ scale: 0.9, opacity: 0.8 }}
                                         animate={{ scale: 1, opacity: 1 }}
-                                        className={`${isSmallScreen ? 'text-5xl' : isMediumScreen ? 'text-6xl' : 'text-7xl'} font-black text-white block tracking-tighter`}
+                                        className={`${isSmallScreen ? 'text-4xl' : isMediumScreen ? 'text-5xl' : 'text-6xl'} font-black text-white block tracking-tighter`}
                                     >
                                         {isUploading ? uploadProgress : Math.round(progress)}%
                                     </motion.span>
-                                    <span className="text-[10px] uppercase tracking-[0.4em] text-primary font-bold">
+                                    <span className="text-[8px] uppercase tracking-[0.3em] text-primary font-bold">
                                         {isUploading ? "Uploading" : "Analysing"}
                                     </span>
 
@@ -726,28 +722,14 @@ const Dashboard = () => {
                                         <motion.div
                                             initial={{ opacity: 0 }}
                                             animate={{ opacity: 1 }}
-                                            className="mt-2 flex items-center justify-center gap-1.5"
+                                            className="mt-1 flex items-center justify-center gap-1"
                                         >
-                                            <span className="text-primary text-base font-black">{verifiedCount}</span>
-                                            <span className="text-white/30 text-xs">/</span>
-                                            <span className="text-white/50 text-xs font-bold">{totalEvents}</span>
-                                            <span className="text-white/30 text-[8px] uppercase tracking-widest">Events</span>
+                                            <span className="text-primary text-sm font-black">{verifiedCount}</span>
+                                            <span className="text-white/30 text-[10px]">/</span>
+                                            <span className="text-white/50 text-[10px] font-bold">{totalEvents}</span>
+                                            <span className="text-white/30 text-[7px] uppercase tracking-widest">Events</span>
                                         </motion.div>
                                     )}
-
-                                    {/* ETA & Frames */}
-                                    <div className="mt-3 flex flex-col gap-1.5">
-                                        {eta !== null && (
-                                            <span className="text-muted-foreground text-[9px] tracking-[0.2em] font-mono">
-                                                EST. {Math.floor(eta / 60)}:{(eta % 60).toString().padStart(2, '0')} REMAINING
-                                            </span>
-                                        )}
-                                        {frames.total > 0 && (
-                                            <span className="text-primary/60 text-[9px] tracking-[0.2em] font-mono">
-                                                FRAME {frames.processed} / {frames.total}
-                                            </span>
-                                        )}
-                                    </div>
                                 </div>
 
                                 {/* Station Nodes — radius dynamically adapts outside standard svgRadius */}
@@ -761,21 +743,21 @@ const Dashboard = () => {
                                                 transform: `rotate(${angle}deg) translate(${radius}px) rotate(${-angle}deg)`
                                             }}
                                         >
-                                            <div className={`w-6 h-6 rounded-full border-2 transition-all duration-500 flex items-center justify-center ${stage.status === "completed" ? "bg-primary border-primary shadow-[0_0_15px_rgba(0,255,135,0.4)]" :
-                                                stage.status === "active" ? "bg-primary animate-pulse border-white shadow-[0_0_30px_rgba(0,255,135,0.8)]" :
-                                                    "bg-background/80 border-white/40"
+                                            <div className={`w-5 h-5 rounded-full border-2 transition-all duration-500 flex items-center justify-center ${stage.status === "completed" ? "bg-primary border-primary shadow-[0_0_10px_rgba(0,255,135,0.4)]" :
+                                                stage.status === "active" ? "bg-primary animate-pulse border-white shadow-[0_0_20px_rgba(0,255,135,0.7)]" :
+                                                    "bg-background/80 border-white/30"
                                                 }`}>
-                                                {stage.status === "completed" && <CheckCircle2 className="w-3.5 h-3.5 text-black" />}
+                                                {stage.status === "completed" && <CheckCircle2 className="w-2.5 h-2.5 text-black" />}
                                             </div>
-                                            <div className="absolute top-8 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
-                                                <span className={`text-[9px] uppercase tracking-widest font-bold block ${stage.status === "idle" ? "text-white/20" : "text-white"}`}>
+                                            <div className="absolute top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-center">
+                                                <span className={`text-[7px] uppercase tracking-wide font-bold block ${stage.status === "idle" ? "text-white/20" : "text-white"}`}>
                                                     {stage.name}
                                                 </span>
                                                 {stage.status === "active" && (
                                                     <motion.span
                                                         initial={{ opacity: 0 }}
                                                         animate={{ opacity: 1 }}
-                                                        className="text-[8px] text-primary mt-0.5 lowercase font-mono block max-w-[100px] leading-tight"
+                                                        className="text-[6px] text-primary mt-0.5 lowercase font-mono block max-w-[80px] leading-tight"
                                                     >
                                                         {stage.detail}
                                                     </motion.span>
@@ -789,13 +771,13 @@ const Dashboard = () => {
                             {/* Right: Logs and Live Events */}
                             <div className="flex flex-col gap-6 w-full max-w-xl justify-center">
                                 {/* Live Processing Log */}
-                                <div className="glass-card p-5 sm:p-6 flex flex-col gap-4 font-mono bg-black/40 border-primary/20 overflow-hidden h-[240px] sm:h-[280px]">
-                                    <div className="flex items-center justify-between border-b border-white/5 pb-3">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                                            <span className="text-white font-black uppercase tracking-[0.4em] text-[9px]">Live System Logs</span>
+                                <div className="glass-card p-3 sm:p-4 flex flex-col gap-3 font-mono bg-black/40 border-primary/20 overflow-hidden h-[180px] sm:h-[220px]">
+                                    <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                                        <div className="flex items-center gap-1.5">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+                                            <span className="text-white font-black uppercase tracking-[0.3em] text-[8px]">Live System Logs</span>
                                         </div>
-                                        <div className="text-[9px] text-white/20 font-bold tracking-[0.1em]">CTRL+C TO ABORT</div>
+                                        <div className="text-[7px] text-white/20 font-bold tracking-[0.1em]">CTRL+C TO ABORT</div>
                                     </div>
 
                                     <div className="flex-1 relative overflow-hidden flex flex-col justify-end">
@@ -811,7 +793,7 @@ const Dashboard = () => {
                                                         transition={{ duration: 0.4, ease: "easeOut" }}
                                                         className="border-l-2 border-primary/20 pl-3 py-0.5"
                                                     >
-                                                        <span className="text-primary/90 font-bold text-[11px] leading-relaxed">{log}</span>
+                                                        <span className="text-primary/90 font-bold text-[9px] leading-relaxed">{log}</span>
                                                     </motion.div>
                                                 ))}
                                             </AnimatePresence>
@@ -830,20 +812,20 @@ const Dashboard = () => {
                                 </div>
 
                                 {/* WHAT WE'RE FINDING (Live Events) */}
-                                <div className="glass-card p-5 sm:p-6 bg-primary/5 border-primary/20 min-h-[120px] sm:min-h-[130px]">
-                                    <h4 className="text-[10px] uppercase tracking-[0.4em] text-primary font-black mb-4 flex items-center gap-2">
-                                        <Zap className="w-3 h-3" /> What we're finding
+                                <div className="glass-card p-3 sm:p-4 bg-primary/5 border-primary/20 min-h-[90px] sm:min-h-[110px]">
+                                    <h4 className="text-[8px] uppercase tracking-[0.3em] text-primary font-black mb-3 flex items-center gap-1.5">
+                                        <Zap className="w-2.5 h-2.5" /> What we're finding
                                     </h4>
-                                    <div className="flex flex-wrap gap-3">
+                                    <div className="flex flex-wrap gap-2">
                                         <AnimatePresence>
                                             {detectedEvents.length === 0 ? (
-                                                <div className="flex items-center gap-4">
+                                                <div className="flex items-center gap-3">
                                                     <motion.div
                                                         animate={{ opacity: [0.3, 1, 0.3] }}
                                                         transition={{ duration: 1.5, repeat: Infinity }}
-                                                        className="w-1.5 h-1.5 bg-primary rounded-full"
+                                                        className="w-1 h-1 bg-primary rounded-full"
                                                     />
-                                                    <p className="text-white/30 text-xs italic tracking-widest font-mono">SCANNING STREAM FOR EVENT SIGNATURES...</p>
+                                                    <p className="text-white/30 text-[9px] italic tracking-widest font-mono">SCANNING STREAM FOR EVENT SIGNATURES...</p>
                                                 </div>
                                             ) : (
                                                 detectedEvents.map((event, i) => (
@@ -851,12 +833,12 @@ const Dashboard = () => {
                                                         key={i}
                                                         initial={{ scale: 0, opacity: 0 }}
                                                         animate={{ scale: 1, opacity: 1 }}
-                                                        className="px-4 py-2 bg-white/5 border border-white/10 rounded-full flex items-center gap-3"
+                                                        className="px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-full flex items-center gap-2"
                                                     >
-                                                        <span className="text-lg">{event.icon}</span>
+                                                        <span className="text-sm">{event.icon}</span>
                                                         <div className="flex flex-col">
-                                                            <span className="text-[10px] font-bold text-white uppercase">{event.type}</span>
-                                                            <span className="text-[8px] text-primary/60 font-mono">at {event.time}</span>
+                                                            <span className="text-[8px] font-bold text-white uppercase">{event.type}</span>
+                                                            <span className="text-[7px] text-primary/60 font-mono">at {event.time}</span>
                                                         </div>
                                                     </motion.div>
                                                 ))
