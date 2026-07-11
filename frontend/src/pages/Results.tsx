@@ -492,9 +492,9 @@ const ResultsPage = () => {
             <div className="w-1 h-1 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(0,255,128,0.8)]" />
             <span className="text-[8px] sm:text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Automated Intel Extraction</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-[0.02em] uppercase mb-3 sm:mb-6 flex flex-wrap items-center justify-center gap-x-3">
-            <span style={{ WebkitTextStroke: '1.5px white', paintOrder: 'stroke fill', color: 'transparent' }}>MATCH</span>
-            <span style={{ WebkitTextStroke: '1.5px hsl(var(--primary))', paintOrder: 'stroke fill', color: 'transparent' }}>RESULTS.</span>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-[0.06em] uppercase mb-3 sm:mb-6 flex flex-wrap items-center justify-center gap-x-3" style={{ letterSpacing: '0.06em' }}>
+            <span style={{ WebkitTextStroke: '0.8px white', paintOrder: 'stroke fill', color: 'transparent' }}>MATCH</span>
+            <span style={{ WebkitTextStroke: '0.8px hsl(var(--primary))', paintOrder: 'stroke fill', color: 'transparent' }}>RESULTS.</span>
           </h1>
 
           {/* Centered Stats Bar */}
@@ -702,7 +702,7 @@ const ResultsPage = () => {
                 <div className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
                 <span className="text-[9px] sm:text-[12px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Elite Match Intelligence</span>
               </div>
-              <h2 className="text-xl sm:text-4xl md:text-5xl font-bold tracking-tight uppercase leading-[1] text-white">
+              <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold uppercase leading-[1] text-white" style={{ letterSpacing: '0.06em' }}>
                 MATCH <span className="text-primary">SUMMARY.</span>
               </h2>
             </div>
