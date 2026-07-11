@@ -30,10 +30,10 @@ const StatItem = ({ label, value, delay }: any) => {
       whileInView={{ opacity: 1, scale: 1 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6, delay }}
-      className="flex flex-col items-center px-4"
+      className="flex flex-col items-center px-2 sm:px-4"
     >
-      <div className="text-3xl sm:text-[38px] font-black text-white leading-none tracking-tighter drop-shadow-sm">{displayValue}</div>
-      <div className="text-[10px] uppercase tracking-[4px] text-primary/70 font-black mt-2">{label}</div>
+      <div className="text-2xl sm:text-[34px] font-black text-white leading-none tracking-tighter drop-shadow-sm">{displayValue}</div>
+      <div className="text-[8px] sm:text-[10px] uppercase tracking-[3px] sm:tracking-[4px] text-primary/70 font-black mt-1 sm:mt-2">{label}</div>
     </motion.div>
   );
 };
@@ -488,21 +488,21 @@ const ResultsPage = () => {
           className="space-y-4 sm:space-y-6 flex flex-col items-center"
         >
 
-          <div className="flex items-center justify-center gap-3 mb-1">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-[0_0_12px_rgba(0,255,128,0.8)]" />
-            <span className="text-[10px] font-black tracking-[0.4em] text-primary uppercase">Automated Intel Extraction</span>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <div className="w-1 h-1 rounded-full bg-primary animate-pulse shadow-[0_0_8px_rgba(0,255,128,0.8)]" />
+            <span className="text-[8px] sm:text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Automated Intel Extraction</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-[0.02em] uppercase mb-4 sm:mb-6 flex flex-wrap items-center justify-center gap-x-4">
-            <span style={{ WebkitTextStroke: '2px white', paintOrder: 'stroke fill', color: 'transparent' }}>MATCH</span>
-            <span style={{ WebkitTextStroke: '2px hsl(var(--primary))', paintOrder: 'stroke fill', color: 'transparent' }}>RESULTS.</span>
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-[0.02em] uppercase mb-3 sm:mb-6 flex flex-wrap items-center justify-center gap-x-3">
+            <span style={{ WebkitTextStroke: '1.5px white', paintOrder: 'stroke fill', color: 'transparent' }}>MATCH</span>
+            <span style={{ WebkitTextStroke: '1.5px hsl(var(--primary))', paintOrder: 'stroke fill', color: 'transparent' }}>RESULTS.</span>
           </h1>
 
           {/* Centered Stats Bar */}
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-10 bg-white/[0.02] backdrop-blur-2xl border border-white/5 py-3 px-6 sm:py-6 sm:px-12 rounded-[20px] sm:rounded-[32px] shadow-2xl">
+          <div className="flex items-center justify-center gap-3 sm:gap-10 bg-white/[0.02] backdrop-blur-2xl border border-white/5 py-2.5 px-5 sm:py-6 sm:px-12 rounded-[16px] sm:rounded-[32px] shadow-2xl">
             <StatItem label="Wkts" value={stats.totalWickets} delay={0.4} />
-            <div className="hidden sm:block w-px h-10 sm:h-12 bg-white/5" />
+            <div className="w-px h-8 sm:h-12 bg-white/5" />
             <StatItem label="Sixes" value={stats.six} delay={0.5} />
-            <div className="hidden sm:block w-px h-10 sm:h-12 bg-white/5" />
+            <div className="w-px h-8 sm:h-12 bg-white/5" />
             <StatItem label="Fours" value={stats.four} delay={0.6} />
           </div>
         </motion.div>
@@ -691,32 +691,32 @@ const ResultsPage = () => {
             hidden: { opacity: 0, y: 50 },
             visible: { opacity: 1, y: 0, transition: { duration: 1, delay: 0.6 } }
           }}
-          className="p-5 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[20px] sm:rounded-[36px] relative group text-left w-full max-w-[850px] mx-auto mt-6 shadow-2xl"
+          className="p-4 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[16px] sm:rounded-[36px] relative group text-left w-full max-w-[850px] mx-auto mt-4 sm:mt-6 shadow-2xl"
         >
           <div className="absolute top-0 right-1/4 w-[30%] h-1.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(0,255,135,0.02),transparent_40%)] pointer-events-none rounded-[24px] sm:rounded-[36px]" />
 
-          <div className="flex flex-col items-center justify-center gap-6 mb-10 relative z-10 border-b border-white/5 pb-8 text-center">
+          <div className="flex flex-col items-center justify-center gap-4 mb-6 sm:mb-10 relative z-10 border-b border-white/5 pb-5 sm:pb-8 text-center">
             <div className="flex-1">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_hsl(var(--primary))]" />
-                <span className="text-[12px] font-black tracking-[0.4em] text-primary uppercase">Elite Match Intelligence</span>
+              <div className="flex items-center justify-center gap-2 mb-2 sm:mb-4">
+                <div className="w-1.5 h-1.5 sm:w-2.5 sm:h-2.5 rounded-full bg-primary shadow-[0_0_8px_hsl(var(--primary))]" />
+                <span className="text-[9px] sm:text-[12px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Elite Match Intelligence</span>
               </div>
-              <h2 className="text-3xl sm:text-5xl md:text-6xl font-bold tracking-tight uppercase leading-[1] text-white">
+              <h2 className="text-xl sm:text-4xl md:text-5xl font-bold tracking-tight uppercase leading-[1] text-white">
                 MATCH <span className="text-primary">SUMMARY.</span>
               </h2>
             </div>
           </div>
 
-          <div className="columns-1 md:columns-2 gap-10 md:gap-16 font-serif text-white/70 text-[0.95rem] sm:text-[1.05rem] leading-[1.8] sm:leading-[2.0] tracking-normal pt-2 relative z-10">
+          <div className="columns-1 md:columns-2 gap-10 md:gap-16 font-serif text-white/70 text-[0.82rem] sm:text-[0.95rem] leading-[1.7] sm:leading-[1.9] tracking-normal pt-2 relative z-10">
             {summaryText ? (
               summaryText.split('\n').filter(p => p.trim() !== '').slice(0, 10).map((para, i) => (
-                <p key={i} className={`mb-8 ${i === 0 ? 'first-letter:text-[5rem] sm:first-letter:text-[6rem] first-letter:font-black first-letter:text-primary first-letter:mr-4 sm:first-letter:mr-6 first-letter:float-left first-letter:leading-[0.75] first-letter:font-sans' : ''}`}>
+                <p key={i} className={`mb-5 sm:mb-8 ${i === 0 ? 'first-letter:text-[3rem] sm:first-letter:text-[5rem] first-letter:font-black first-letter:text-primary first-letter:mr-2 sm:first-letter:mr-4 first-letter:float-left first-letter:leading-[0.8] first-letter:font-sans' : ''}`}>
                   {para}
                 </p>
               ))
             ) : (
-              <p className="first-letter:text-[5rem] sm:first-letter:text-[6rem] first-letter:font-black first-letter:text-primary first-letter:mr-4 sm:first-letter:mr-6 first-letter:float-left first-letter:leading-[0.75] first-letter:font-sans">
+              <p className="first-letter:text-[3rem] sm:first-letter:text-[5rem] first-letter:font-black first-letter:text-primary first-letter:mr-2 sm:first-letter:mr-4 first-letter:float-left first-letter:leading-[0.8] first-letter:font-sans">
                 The engine identifies a masterclass in progress. Analysis reveals surgical precision in the batting department, with boundary frequencies surging in the second powerplay. Wickets fell at critical junctures, disrupting the momentum just as the run rate began to spiral.
               </p>
             )}
