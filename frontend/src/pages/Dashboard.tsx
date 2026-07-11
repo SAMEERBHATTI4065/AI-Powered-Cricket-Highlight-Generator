@@ -1,6 +1,127 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Film, X, ArrowRight, Loader2, Zap, LayoutGrid, Clock, Shield, CheckCircle2, ChevronRight, Play, Database, History as HistoryIcon, Calendar } from "lucide-react";
+import { Upload, Film, X, ArrowRight, Loader2, Zap, LayoutGrid, Clock, Shield, CheckCircle2, ChevronRight, Play, Database, History as HistoryIcon, Calendar, PlayCircle, ChevronDown } from "lucide-react";
+
+// Demo video sources — HF LFS CDN first (fastest, no backend), then CDN fallbacks
+const DASHBOARD_DEMO_SOURCES = [
+    "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4",
+    "/api/demo-video/",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+];
+
+const DashboardDemoVideo = () => {
+    const [srcIndex, setSrcIndex] = useState(0);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const videoRef = useRef<HTMLVideoElement>(null);
+
+    const handleError = () => {
+        if (srcIndex < DASHBOARD_DEMO_SOURCES.length - 1) {
+            setSrcIndex(prev => prev + 1);
+        }
+    };
+
+    const toggleExpand = () => {
+        setIsExpanded(prev => !prev);
+        if (!isExpanded && videoRef.current) {
+            videoRef.current.play().catch(() => {});
+        }
+    };
+
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="w-full max-w-5xl mx-auto mb-8"
+        >
+            {/* Header row */}
+            <button
+                onClick={toggleExpand}
+                className="w-full flex items-center justify-between px-5 py-3 bg-primary/10 border border-primary/30 rounded-2xl hover:bg-primary/15 transition-all group"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[11px] uppercase tracking-[0.25em] text-primary font-black">
+                        Live Demo — Watch AI Highlights In Action
+                    </span>
+                </div>
+                <div className="flex items-center gap-2 text-primary/60 group-hover:text-primary transition-colors">
+                    <PlayCircle className="w-4 h-4" />
+                    <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                        <ChevronDown className="w-4 h-4" />
+                    </motion.div>
+                </div>
+            </button>
+
+            {/* Expandable video panel */}
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.4, ease: "easeInOut" }}
+                        className="overflow-hidden"
+                    >
+                        <div className="mt-3 rounded-2xl border border-primary/20 overflow-hidden shadow-[0_0_40px_rgba(0,255,135,0.1)] bg-black relative aspect-video">
+                            {/* Scanner overlay */}
+                            <motion.div
+                                animate={{ top: ["0%", "100%", "0%"] }}
+                                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                                className="absolute left-0 right-0 h-[1px] bg-primary/30 shadow-[0_0_10px_rgba(0,255,135,0.3)] z-10 pointer-events-none"
+                            />
+
+                            {/* Status badge */}
+                            <div className="absolute top-3 left-3 z-20 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20">
+                                <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                                <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-bold">ANALYZING_STREAM_LIVE</span>
+                            </div>
+
+                            {/* Precision badge */}
+                            <div className="absolute bottom-3 right-3 z-20 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                                <span className="text-[8px] uppercase tracking-[0.2em] text-white/60 font-medium">99.8% PRECISION</span>
+                            </div>
+
+                            {/* Loading shimmer */}
+                            {!isLoaded && (
+                                <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-30">
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                        className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full mb-3"
+                                    />
+                                    <span className="text-[10px] uppercase tracking-widest text-primary/60 font-mono">Loading Demo...</span>
+                                </div>
+                            )}
+
+                            <video
+                                ref={videoRef}
+                                key={srcIndex}
+                                src={DASHBOARD_DEMO_SOURCES[srcIndex]}
+                                className="w-full h-full object-cover"
+                                autoPlay
+                                muted
+                                loop
+                                playsInline
+                                onError={handleError}
+                                onLoadedData={() => setIsLoaded(true)}
+                                onCanPlay={() => setIsLoaded(true)}
+                            />
+
+                            {/* Grid overlay */}
+                            <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(#00ff87_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-10" />
+                        </div>
+                        <p className="text-center text-[10px] uppercase tracking-[0.2em] text-primary/60 font-bold mt-2">
+                            Sample Output — Real Match Highlights Generated by CricketAI
+                        </p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </motion.div>
+    );
+};
 import { useNavigate, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -443,6 +564,9 @@ const Dashboard = () => {
             <div className="flex-1 flex flex-col items-center justify-center container mx-auto px-6 relative z-10 w-full pt-[96px] pb-12 min-h-[calc(100vh-96px)]">
                 {!processing ? (
                     <div className="w-full max-w-5xl flex flex-col items-center justify-center my-auto py-6">
+                        {/* Demo Video Panel — always visible at top of dashboard */}
+                        <DashboardDemoVideo />
+
                         {/* Circular Upload/File Zone */}
                         <div className="relative flex items-center justify-center w-[260px] h-[260px] sm:w-[310px] sm:h-[310px] md:w-[350px] md:h-[350px] shrink-0">
                             {/* Concentric Pulsing Rings */}
