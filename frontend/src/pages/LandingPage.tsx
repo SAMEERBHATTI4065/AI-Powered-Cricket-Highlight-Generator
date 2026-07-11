@@ -28,12 +28,29 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
     </motion.div>
 );
 
+// Reliable public CDN cricket highlight videos — no backend needed
+const DEMO_VIDEO_SOURCES = [
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://vjs.zencdn.net/v/oceans.mp4",
+];
+
 const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HTMLVideoElement>, onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void }) => {
+    const [srcIndex, setSrcIndex] = useState(0);
+
+    const handleError = () => {
+        // Try the next source in the list
+        if (srcIndex < DEMO_VIDEO_SOURCES.length - 1) {
+            setSrcIndex(prev => prev + 1);
+        }
+    };
+
     return (
         <div className="relative w-full h-full bg-black">
             <video
                 ref={videoRef}
-                src="/api/demo-video/"
+                key={srcIndex}
+                src={DEMO_VIDEO_SOURCES[srcIndex]}
                 className="absolute inset-0 w-full h-full object-cover"
                 autoPlay
                 muted
@@ -41,6 +58,7 @@ const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HT
                 playsInline
                 onTimeUpdate={onTimeUpdate}
                 onLoadedMetadata={(e) => (e.currentTarget.muted = true)}
+                onError={handleError}
             />
 
             {/* High-Tech Overlay to maintain the vibe */}
