@@ -28,9 +28,9 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
     </motion.div>
 );
 
-// Reliable public CDN cricket highlight videos — no backend needed
+// Primary: teri apni cricket video (WhiteNoise static serve) — CDN sirf fallback hai
 const DEMO_VIDEO_SOURCES = [
-    "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
+    "/static/demo-video.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
     "https://vjs.zencdn.net/v/oceans.mp4",
 ];
