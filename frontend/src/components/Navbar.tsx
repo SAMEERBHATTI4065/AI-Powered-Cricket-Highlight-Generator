@@ -83,66 +83,95 @@ const Navbar = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu Drawer */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-[110] bg-background flex flex-col items-center justify-center gap-5 p-8"
-          >
-            <button
-              className="absolute top-8 right-8 text-white p-2 hover:bg-white/5 rounded-full transition-colors"
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsMobileMenuOpen(false)}
+              className="fixed inset-0 z-[105] bg-black/60 backdrop-blur-sm md:hidden"
+            />
+            {/* Drawer */}
+            <motion.div
+              initial={{ y: "-100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "-100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 250 }}
+              className="fixed inset-x-0 top-0 z-[110] bg-[#040810]/95 backdrop-blur-2xl border-b border-white/5 flex flex-col gap-6 py-6 px-6 shadow-[0_15px_40px_rgba(0,0,0,0.9)] rounded-b-[24px] md:hidden"
             >
-              <X className="w-8 h-8" />
-            </button>
-
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                to={link.path}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={`text-2xl font-display font-medium tracking-widest uppercase transition-colors hover:text-primary ${location.pathname === link.path ? "text-primary" : "text-white"
-                  }`}
-              >
-                {link.name}
-              </Link>
-            ))}
-
-            <div className="flex flex-col items-center gap-3 mt-4 w-full">
-              {user ? (
-                <>
-                  <span className="text-xs text-white/50 font-mono">Hi, {user.username}</span>
-                  <button
-                    onClick={() => { logout(); setIsMobileMenuOpen(false); }}
-                    className="flex items-center justify-center gap-1.5 border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500/5 px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 w-auto min-w-[140px]"
-                  >
-                    <LogOut size={12} />
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/login"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="flex items-center justify-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 w-auto min-w-[140px]"
-                >
-                  <LogIn size={12} />
-                  Login
+              {/* Header inside drawer */}
+              <div className="flex items-center justify-between">
+                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/30">
+                    <Zap className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="font-display text-lg font-bold tracking-[0.06em] text-white">
+                    Cricket<span className="text-primary">AI</span>
+                  </span>
                 </Link>
-              )}
+                <button
+                  className="text-white p-1.5 hover:bg-white/5 rounded-full transition-colors"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
 
-              <Link
-                to={user ? "/dashboard" : "/login"}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-center bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-5 py-2 text-xs font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.25)] text-center w-auto min-w-[140px]"
-              >
-                Start Analysing
-              </Link>
-            </div>
-          </motion.div>
+              {/* Navigation Links */}
+              <div className="flex flex-col gap-4 mt-2">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.name}
+                    to={link.path}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={`text-base font-mono uppercase tracking-[0.2em] font-semibold transition-colors hover:text-primary ${
+                      location.pathname === link.path ? "text-primary" : "text-white/80"
+                    }`}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-4 mt-2 border-t border-white/5 pt-5 w-full">
+                {user ? (
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-xs text-white/50 font-mono truncate max-w-[120px]">Hi, {user.username}</span>
+                    <button
+                      onClick={() => { logout(); setIsMobileMenuOpen(false); }}
+                      className="flex items-center gap-1.5 border border-red-500/30 hover:border-red-500 text-red-500 hover:bg-red-500/5 px-4 py-2 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300"
+                    >
+                      <LogOut size={10} />
+                      Logout
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 flex items-center justify-center gap-1.5 border border-[#00FF87]/30 hover:border-[#00FF87] text-[#00FF87] hover:bg-[#00FF87]/5 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 text-center"
+                    >
+                      <LogIn size={10} />
+                      Login
+                    </Link>
+                    <Link
+                      to={user ? "/dashboard" : "/login"}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 flex items-center justify-center bg-[#00FF87] hover:bg-[#00FF87]/90 text-black px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(0,255,135,0.2)] text-center"
+                    >
+                      Analyse Match
+                    </Link>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </>
