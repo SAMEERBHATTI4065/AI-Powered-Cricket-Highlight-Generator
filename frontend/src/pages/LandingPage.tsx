@@ -28,23 +28,58 @@ const FeatureCard = ({ title, desc, icon, size = "small", learnMoreUrl }: any) =
     </motion.div>
 );
 
-// HF LFS CDN URL first — direct, fast, no Django overhead, teri apni cricket video
+// Fast CDN sources — loads in <3 seconds (no HF LFS slow redirect)
+// TO USE YOUR OWN CRICKET VIDEO: Upload to YouTube as Unlisted and update YOUTUBE_VIDEO_ID below
+const YOUTUBE_VIDEO_ID = ""; // e.g. "dQw4w9WgXcQ" — paste your YouTube video ID here
+
 const DEMO_VIDEO_SOURCES = [
-    "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4",
-    "/api/demo-video/",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://vjs.zencdn.net/v/oceans.mp4",
 ];
 
 const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HTMLVideoElement>, onTimeUpdate: (e: React.SyntheticEvent<HTMLVideoElement>) => void }) => {
     const [srcIndex, setSrcIndex] = useState(0);
 
     const handleError = () => {
-        // Try the next source in the list
         if (srcIndex < DEMO_VIDEO_SOURCES.length - 1) {
             setSrcIndex(prev => prev + 1);
         }
     };
+
+    // If YouTube ID is set, use YouTube embed (permanent + instant)
+    if (YOUTUBE_VIDEO_ID) {
+        return (
+            <div className="relative w-full h-full bg-black">
+                <iframe
+                    src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&modestbranding=1`}
+                    className="absolute inset-0 w-full h-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    title="CricketAI Demo"
+                />
+                <div className="absolute inset-0 pointer-events-none z-10">
+                    <motion.div
+                        animate={{ top: ["0%", "100%", "0%"] }}
+                        transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-[1px] bg-primary/40 shadow-[0_0_15px_rgba(0,255,135,0.4)]"
+                    />
+                    <div className="absolute top-4 left-4">
+                        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                            <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-bold">ANALYZING_STREAM_LIVE</span>
+                        </div>
+                    </div>
+                    <div className="absolute bottom-4 right-4">
+                        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
+                            <span className="text-[8px] uppercase tracking-[0.2em] text-white/60 font-medium">99.8% PRECISION</span>
+                        </div>
+                    </div>
+                    <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#00ff87_1px,transparent_1px)] [background-size:24px_24px]" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="relative w-full h-full bg-black">
@@ -64,28 +99,22 @@ const AIDemoVisual = ({ videoRef, onTimeUpdate }: { videoRef: React.RefObject<HT
 
             {/* High-Tech Overlay to maintain the vibe */}
             <div className="absolute inset-0 pointer-events-none z-10">
-                {/* Minimalist Scanner */}
                 <motion.div
                     animate={{ top: ["0%", "100%", "0%"] }}
                     transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
                     className="absolute left-0 right-0 h-[1px] bg-primary/40 shadow-[0_0_15px_rgba(0,255,135,0.4)]"
                 />
-
-                {/* Status Badges */}
                 <div className="absolute top-4 left-4">
                     <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20">
                         <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                         <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-bold">ANALYZING_STREAM_LIVE</span>
                     </div>
                 </div>
-
                 <div className="absolute bottom-4 right-4">
                     <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                         <span className="text-[8px] uppercase tracking-[0.2em] text-white/60 font-medium">99.8% PRECISION</span>
                     </div>
                 </div>
-
-                {/* Grid Overlay */}
                 <div className="absolute inset-0 opacity-[0.05] bg-[radial-gradient(#00ff87_1px,transparent_1px)] [background-size:24px_24px]" />
             </div>
         </div>
