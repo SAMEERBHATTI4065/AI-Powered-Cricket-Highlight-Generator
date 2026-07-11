@@ -4,7 +4,7 @@ import { Upload, Film, X, ArrowRight, Loader2, Zap, LayoutGrid, Clock, Shield, C
 
 // Fast CDN sources — loads in <3 seconds
 // PERMANENT FIX: set YOUTUBE_VIDEO_ID to your YouTube video ID (upload as Unlisted)
-const YOUTUBE_VIDEO_ID = ""; // e.g. "dQw4w9WgXcQ"
+const YOUTUBE_VIDEO_ID = "fajVPftHI2M"; // Cricket highlight video
 
 const DASHBOARD_DEMO_SOURCES = [
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
