@@ -438,8 +438,15 @@ def ensure_valid_demo_video():
     
     url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
     try:
-        # Download with a timeout of 30 seconds
-        urllib.request.urlretrieve(url, demo_path)
+        # Download with a custom User-Agent to prevent 403 Forbidden from CDNs/GCS
+        req = urllib.request.Request(
+            url,
+            headers={
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+        )
+        with urllib.request.urlopen(req, timeout=30) as response, open(demo_path, 'wb') as out_file:
+            shutil.copyfileobj(response, out_file)
         logger.info(f"Downloaded sample video successfully to {demo_path}")
         return demo_path
     except Exception as e:
