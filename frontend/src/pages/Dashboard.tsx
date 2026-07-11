@@ -2,12 +2,14 @@ import { useState, useCallback, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Upload, Film, X, ArrowRight, Loader2, Zap, LayoutGrid, Clock, Shield, CheckCircle2, ChevronRight, Play, Database, History as HistoryIcon, Calendar, PlayCircle, ChevronDown } from "lucide-react";
 
-// Demo video sources — HF LFS CDN first (fastest, no backend), then CDN fallbacks
+// Fast CDN sources — loads in <3 seconds
+// PERMANENT FIX: set YOUTUBE_VIDEO_ID to your YouTube video ID (upload as Unlisted)
+const YOUTUBE_VIDEO_ID = ""; // e.g. "dQw4w9WgXcQ"
+
 const DASHBOARD_DEMO_SOURCES = [
-    "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4",
-    "/api/demo-video/",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4",
     "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
+    "https://vjs.zencdn.net/v/oceans.mp4",
 ];
 
 const DashboardDemoVideo = () => {
@@ -72,18 +74,15 @@ const DashboardDemoVideo = () => {
                                 transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
                                 className="absolute left-0 right-0 h-[1px] bg-primary/30 shadow-[0_0_10px_rgba(0,255,135,0.3)] z-10 pointer-events-none"
                             />
-
                             {/* Status badge */}
                             <div className="absolute top-3 left-3 z-20 flex items-center gap-2 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-full border border-primary/20">
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
                                 <span className="text-[9px] uppercase tracking-[0.2em] text-primary font-bold">ANALYZING_STREAM_LIVE</span>
                             </div>
-
                             {/* Precision badge */}
                             <div className="absolute bottom-3 right-3 z-20 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
                                 <span className="text-[8px] uppercase tracking-[0.2em] text-white/60 font-medium">99.8% PRECISION</span>
                             </div>
-
                             {/* Loading shimmer */}
                             {!isLoaded && (
                                 <div className="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-30">
@@ -96,20 +95,30 @@ const DashboardDemoVideo = () => {
                                 </div>
                             )}
 
-                            <video
-                                ref={videoRef}
-                                key={srcIndex}
-                                src={DASHBOARD_DEMO_SOURCES[srcIndex]}
-                                className="w-full h-full object-cover"
-                                autoPlay
-                                muted
-                                loop
-                                playsInline
-                                onError={handleError}
-                                onLoadedData={() => setIsLoaded(true)}
-                                onCanPlay={() => setIsLoaded(true)}
-                            />
-
+                            {YOUTUBE_VIDEO_ID ? (
+                                <iframe
+                                    src={`https://www.youtube.com/embed/${YOUTUBE_VIDEO_ID}?autoplay=1&mute=1&loop=1&playlist=${YOUTUBE_VIDEO_ID}&controls=0&modestbranding=1`}
+                                    className="w-full h-full"
+                                    allow="autoplay; encrypted-media"
+                                    allowFullScreen
+                                    title="CricketAI Demo"
+                                    onLoad={() => setIsLoaded(true)}
+                                />
+                            ) : (
+                                <video
+                                    ref={videoRef}
+                                    key={srcIndex}
+                                    src={DASHBOARD_DEMO_SOURCES[srcIndex]}
+                                    className="w-full h-full object-cover"
+                                    autoPlay
+                                    muted
+                                    loop
+                                    playsInline
+                                    onError={handleError}
+                                    onLoadedData={() => setIsLoaded(true)}
+                                    onCanPlay={() => setIsLoaded(true)}
+                                />
+                            )}
                             {/* Grid overlay */}
                             <div className="absolute inset-0 opacity-[0.04] bg-[radial-gradient(#00ff87_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none z-10" />
                         </div>
