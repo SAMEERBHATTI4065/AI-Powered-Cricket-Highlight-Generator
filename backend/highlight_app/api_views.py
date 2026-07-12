@@ -44,7 +44,7 @@ def check_session_access(request, session_id):
 
 def stream_video_api(request, session_id):
     """
-    HTTP Range support for video seeking using FileResponse for maximum compatibility.
+    HTTP Range support for video seeking using hybrid StreamingHttpResponse + FileResponse.
     """
     session, err_resp = check_session_access(request, session_id)
     if err_resp:
@@ -78,10 +78,18 @@ def stream_video_api(request, session_id):
 
         length = last_byte - first_byte + 1
 
-        f = open(file_path, 'rb')
-        f.seek(first_byte)
+        def file_iterator(path, offset, chunk_size=8192):
+            with open(path, 'rb') as f:
+                f.seek(offset)
+                remaining = length
+                while remaining > 0:
+                    data = f.read(min(chunk_size, remaining))
+                    if not data:
+                        break
+                    yield data
+                    remaining -= len(data)
 
-        response = FileResponse(f, status=206, content_type=content_type)
+        response = StreamingHttpResponse(file_iterator(file_path, first_byte), status=206, content_type=content_type)
         response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
         response['Accept-Ranges'] = 'bytes'
         response['Content-Length'] = str(length)
@@ -419,27 +427,17 @@ def ensure_valid_demo_video():
     uploads_dir.mkdir(parents=True, exist_ok=True)
     demo_path = uploads_dir / 'cricket_full_match.mp4'
     
-    # 1. Check if there is already a valid MP4 file in uploads (size > 1MB)
-    mp4_files = [f for f in uploads_dir.glob('*.mp4') if not f.name.startswith('.') and not re.match(r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-', f.name)]
-    for f in mp4_files:
-        if f.exists() and f.stat().st_size > 1024 * 1024:
-            return f
-            
-    # 2. Check local static demo paths first (demo-video.mp4, demo.mp4, cricket_full_match.mp4)
-    static_demo_dir = Path(settings.BASE_DIR) / 'static' / 'demo'
-    possible_static_files = ['demo-video.mp4', 'demo.mp4', 'cricket_full_match.mp4']
-    for filename in possible_static_files:
-        p = static_demo_dir / filename
-        if p.exists() and p.stat().st_size > 1024 * 1024:
-            return p
-
-    # 3. If no valid MP4 exists locally, download the actual cricket demo video from CDN/Git LFS
+    # 1. Check if cricket_full_match.mp4 exists in uploads and is a real file (> 1MB)
+    if demo_path.exists() and demo_path.stat().st_size > 1024 * 1024:
+        return demo_path
+        
+    # 2. If it exists but is an LFS pointer (< 1MB), or is missing, try downloading the real 198MB match video
     import urllib.request
-    logger.info("Demo video not found locally. Downloading real cricket demo video...")
+    logger.info("cricket_full_match.mp4 not found or is LFS pointer. Downloading real cricket match video...")
     
     urls = [
-        "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4",
-        "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4"
+        "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/media/uploads/cricket_full_match.mp4",
+        "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/media/uploads/cricket_full_match.mp4"
     ]
     download_success = False
     for url in urls:
@@ -450,17 +448,63 @@ def ensure_valid_demo_video():
                     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 }
             )
-            with urllib.request.urlopen(req, timeout=60) as response, open(demo_path, 'wb') as out_file:
-                shutil.copyfileobj(response, out_file)
-            logger.info(f"Downloaded real cricket video successfully from {url} to {demo_path}")
-            download_success = True
-            break
+            with urllib.request.urlopen(req, timeout=60) as response:
+                temp_path = demo_path.with_suffix('.tmp')
+                with open(temp_path, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+                if temp_path.stat().st_size > 1024 * 1024:
+                    if demo_path.exists():
+                        demo_path.unlink()
+                    temp_path.rename(demo_path)
+                    logger.info(f"Downloaded real cricket match video successfully from {url} to {demo_path}")
+                    download_success = True
+                    break
+                else:
+                    temp_path.unlink()
         except Exception as e:
-            logger.error(f"Failed to download demo video from {url}: {e}")
+            logger.error(f"Failed to download cricket match video from {url}: {e}")
             
     if download_success:
         return demo_path
-        
+
+    # 3. Fallback: Check local static demo path (demo-video.mp4)
+    static_demo_dir = Path(settings.BASE_DIR) / 'static' / 'demo'
+    possible_static_files = ['demo-video.mp4', 'demo.mp4', 'cricket_full_match.mp4']
+    for filename in possible_static_files:
+        p = static_demo_dir / filename
+        if p.exists() and p.stat().st_size > 1024 * 1024:
+            return p
+
+    # 4. Fallback 2: Download demo-video.mp4 to static/demo/
+    static_demo_dir.mkdir(parents=True, exist_ok=True)
+    fallback_demo_path = static_demo_dir / 'demo-video.mp4'
+    fallback_urls = [
+        "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4",
+        "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4"
+    ]
+    for url in fallback_urls:
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            )
+            with urllib.request.urlopen(req, timeout=60) as response:
+                temp_path = fallback_demo_path.with_suffix('.tmp')
+                with open(temp_path, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+                if temp_path.stat().st_size > 1024 * 1024:
+                    if fallback_demo_path.exists():
+                        fallback_demo_path.unlink()
+                    temp_path.rename(fallback_demo_path)
+                    logger.info(f"Downloaded fallback demo video successfully from {url} to {fallback_demo_path}")
+                    return fallback_demo_path
+                else:
+                    temp_path.unlink()
+        except Exception as e:
+            logger.error(f"Failed to download fallback demo video from {url}: {e}")
+
     return None
 
 def test_video_info(request):
