@@ -56,8 +56,8 @@ fi
 # 3. Start Celery Worker
 echo "Starting Celery worker (concurrency optimized)..." | tee -a /app/logs/startup.log
 cd /app/backend
-# Use concurrency=1 on limited CPU (HF) to ensure stability, or 2 on larger machines
-CELERY_CONCURRENCY=${CELERY_CONCURRENCY:-1}
+# Use concurrency=2 to allow parallel execution of emails and video processing
+CELERY_CONCURRENCY=${CELERY_CONCURRENCY:-2}
 celery -A cricket_highlights worker --loglevel=info --concurrency=$CELERY_CONCURRENCY 2>&1 | tee -a /app/logs/worker.log &
 cd /app
 
