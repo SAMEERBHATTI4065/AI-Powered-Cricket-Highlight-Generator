@@ -344,6 +344,27 @@
   animation: flashHighlight 1.5s ease-out;
 }
 
+/* Custom text stroke utilities */
+.text-stroke-hud-white {
+  -webkit-text-stroke: 0.8px white;
+  paint-order: stroke fill;
+  color: transparent;
+}
+.text-stroke-hud-primary {
+  -webkit-text-stroke: 0.8px hsl(var(--primary));
+  paint-order: stroke fill;
+  color: transparent;
+}
+
+@media (min-width: 640px) {
+  .text-stroke-hud-white {
+    -webkit-text-stroke: 1.5px white;
+  }
+  .text-stroke-hud-primary {
+    -webkit-text-stroke: 1.5px hsl(var(--primary));
+  }
+}
+
 /* ================================================================
    Reduced Motion
    ================================================================ */
