@@ -48,54 +48,98 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
             verified_events = [
                 {
                     "event_id": 1,
-                    "time_window": "2.1-2.2",
+                    "time_window": "1.2-1.3",
                     "event_type": "FOUR",
                     "event_value": 4,
                     "runs_added": 4,
-                    "timestamp": 45.0,
-                    "previous": "12/0 (2.1)",
-                    "current": "16/0 (2.2)",
+                    "timestamp": 24.0,
+                    "previous": "4/0 (1.2)",
+                    "current": "8/0 (1.3)",
                     "team": "IND"
                 },
                 {
                     "event_id": 2,
-                    "time_window": "4.5-4.6",
-                    "event_type": "WICKET",
-                    "event_value": 1,
-                    "runs_added": 0,
-                    "timestamp": 120.0,
-                    "previous": "32/0 (4.5)",
-                    "current": "32/1 (4.6)",
+                    "time_window": "3.1-3.2",
+                    "event_type": "SIX",
+                    "event_value": 6,
+                    "runs_added": 6,
+                    "timestamp": 58.0,
+                    "previous": "18/0 (3.1)",
+                    "current": "24/0 (3.2)",
                     "team": "IND"
                 },
                 {
                     "event_id": 3,
-                    "time_window": "7.2-7.3",
-                    "event_type": "SIX",
-                    "event_value": 6,
-                    "runs_added": 6,
-                    "timestamp": 210.0,
-                    "previous": "54/1 (7.2)",
-                    "current": "60/1 (7.3)",
+                    "time_window": "5.4-5.5",
+                    "event_type": "WICKET",
+                    "event_value": 1,
+                    "runs_added": 0,
+                    "timestamp": 124.0,
+                    "previous": "42/0 (5.4)",
+                    "current": "42/1 (5.5)",
                     "team": "IND"
                 },
                 {
                     "event_id": 4,
-                    "time_window": "10.4-10.5",
+                    "time_window": "7.3-7.4",
+                    "event_type": "FOUR",
+                    "event_value": 4,
+                    "runs_added": 4,
+                    "timestamp": 195.0,
+                    "previous": "58/1 (7.3)",
+                    "current": "62/1 (7.4)",
+                    "team": "IND"
+                },
+                {
+                    "event_id": 5,
+                    "time_window": "9.1-9.2",
+                    "event_type": "SIX",
+                    "event_value": 6,
+                    "runs_added": 6,
+                    "timestamp": 240.0,
+                    "previous": "74/1 (9.1)",
+                    "current": "80/1 (9.2)",
+                    "team": "IND"
+                },
+                {
+                    "event_id": 6,
+                    "time_window": "11.2-11.3",
                     "event_type": "WICKET",
                     "event_value": 1,
                     "runs_added": 0,
-                    "timestamp": 300.0,
-                    "previous": "88/1 (10.4)",
-                    "current": "88/2 (10.5)",
+                    "timestamp": 310.0,
+                    "previous": "96/1 (11.2)",
+                    "current": "96/2 (11.3)",
+                    "team": "IND"
+                },
+                {
+                    "event_id": 7,
+                    "time_window": "13.5-14.0",
+                    "event_type": "FOUR",
+                    "event_value": 4,
+                    "runs_added": 4,
+                    "timestamp": 380.0,
+                    "previous": "118/2 (13.5)",
+                    "current": "122/2 (14.0)",
+                    "team": "IND"
+                },
+                {
+                    "event_id": 8,
+                    "time_window": "15.4-15.5",
+                    "event_type": "WICKET",
+                    "event_value": 1,
+                    "runs_added": 0,
+                    "timestamp": 450.0,
+                    "previous": "138/2 (15.4)",
+                    "current": "138/3 (15.5)",
                     "team": "IND"
                 },
                 {
                     "event_id": 999,
                     "event_type": "MATCH_RESULT",
-                    "timestamp": 350.0,
-                    "match_result": "IND WON BY 8 WICKETS",
-                    "current": "IND 186/2 (18.2)"
+                    "timestamp": 500.0,
+                    "match_result": "IND WON BY 7 WICKETS",
+                    "current": "IND 156/3 (16.4)"
                 }
             ]
             
@@ -109,6 +153,7 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
                 (95, 'report_write', 'Report Write', 'Drafting AI match report...')
             ]
             
+            total_events_count = len([e for e in verified_events if e['event_id'] != 999])
             for pct, stage, label, status in stages_simulation:
                 time.sleep(1.5)
                 self.update_state(state='PROGRESS', meta={
@@ -116,9 +161,9 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
                     'stage': stage,
                     'stage_label': label,
                     'status': status,
-                    'verified_events': len([e for e in verified_events if e['event_id'] != 999 and e['timestamp'] <= (pct/100)*350]),
-                    'total_events': 4,
-                    'events': [e for e in verified_events if e['timestamp'] <= (pct/100)*350],
+                    'verified_events': len([e for e in verified_events if e['event_id'] != 999 and e['timestamp'] <= (pct/100)*500]),
+                    'total_events': total_events_count,
+                    'events': [e for e in verified_events if e['timestamp'] <= (pct/100)*500],
                     'session_id': session_id
                 })
 
@@ -131,7 +176,7 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
                 shutil.copy2(video_path, str(final_video_dest))
                 _tlog(f"Stored final highlights: {final_video_name}", "FILE")
                 
-            summary_text = "The match analysis is complete. We identified 2 wickets and 2 crucial boundaries (one four and one massive six). The batting team pursued the target aggressively, maintaining a steady run rate before finishing the match in the 19th over. India won comfortably by 8 wickets."
+            summary_text = "The match highlights analysis is complete. Our AI engine successfully identified 3 wickets and 5 key boundaries (3 fours and 2 sixes) from the match footage. India pursued the target aggressively, with Virat Kohli anchor-building the innings before getting out in the 15th over. Hardik Pandya finished the game in style in the 17th over, securing a comfortable 7-wicket victory for India."
 
             # Save to DB
             _tlog("Saving results to database...", "DB")
