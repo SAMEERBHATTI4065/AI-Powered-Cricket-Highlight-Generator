@@ -24,12 +24,12 @@ if [ "$DEMO_SIZE" -lt 1048576 ]; then
         echo "$LOG_START Using cricket_full_match.mp4 as demo video source" | tee -a /app/logs/startup.log
         cp "$MATCH_VIDEO" "$DEMO_VIDEO"
     else
-        echo "$LOG_START Downloading demo video from CDN..." | tee -a /app/logs/startup.log
+        echo "$LOG_START Downloading real cricket demo video..." | tee -a /app/logs/startup.log
         curl -L --max-time 300 --retry 3 \
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4" \
+            "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4" \
             -o "$DEMO_VIDEO" 2>&1 | tee -a /app/logs/startup.log || \
         curl -L --max-time 300 --retry 2 \
-            "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" \
+            "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4" \
             -o "$DEMO_VIDEO" 2>&1 | tee -a /app/logs/startup.log || \
         echo "$LOG_START WARNING: Could not download demo video. Will use CDN fallback at runtime." | tee -a /app/logs/startup.log
     fi
