@@ -339,12 +339,8 @@ def get_results_api(request, session_id):
         
     video_url = None
     if session.video_path:
-        # Use our range-compatible streaming endpoint for better seeking performance
-        video_url = f"/api/results/{session_id}/stream/"
-        # Propagate the token to the stream URL if the current view was authorized by token
-        token = request.GET.get('token')
-        if token:
-            video_url += f"?token={token}"
+        # Always propagate the session's share_token so that direct video tag requests (which block 3rd-party cookies in iframes and can't use headers) are authorized.
+        video_url = f"/api/results/{session_id}/stream/?token={session.share_token}"
         
     # Process events through our custom serializer (adds timestamp_formatted, event_label, and validates range)
     serialized_events = serialize_events(session.events_json)
