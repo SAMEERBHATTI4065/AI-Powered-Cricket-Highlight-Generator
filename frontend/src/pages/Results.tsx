@@ -496,8 +496,8 @@ const ResultsPage = () => {
             <span className="text-[8px] sm:text-[10px] font-black tracking-[0.3em] sm:tracking-[0.4em] text-primary uppercase">Automated Intel Extraction</span>
           </div>
           <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black leading-tight tracking-[0.06em] uppercase mb-3 sm:mb-6 flex flex-wrap items-center justify-center gap-x-3" style={{ letterSpacing: '0.06em' }}>
-            <span style={{ WebkitTextStroke: '0.8px white', paintOrder: 'stroke fill', color: 'transparent' }}>MATCH</span>
-            <span style={{ WebkitTextStroke: '0.8px hsl(var(--primary))', paintOrder: 'stroke fill', color: 'transparent' }}>RESULTS.</span>
+            <span className="text-stroke-hud-white">MATCH</span>
+            <span className="text-stroke-hud-primary">RESULTS.</span>
           </h1>
 
           {/* Centered Stats Bar */}

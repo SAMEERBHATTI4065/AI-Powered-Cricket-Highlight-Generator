@@ -191,7 +191,7 @@ export default function Signup() {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-12 md:p-16 z-20">
                 <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[350px] h-[350px] bg-[#00FF87]/5 rounded-full blur-[140px] pointer-events-none z-0" />
 
-                <div className="w-full max-w-[340px] bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
+                <div className="w-full max-w-[340px] sm:max-w-[420px] bg-[#0B1525]/40 backdrop-blur-xl border border-white/5 rounded-2xl p-5 sm:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)] hover:border-[#00FF87]/20 transition-all duration-300 relative z-10">
                     {/* Header */}
                     <div className="mb-4">
                         <Link to="/" className="inline-flex items-center gap-1.5 mb-3 group">
@@ -203,11 +203,11 @@ export default function Signup() {
                             </span>
                         </Link>
 
-                        <h1 className="text-base sm:text-lg font-display font-bold tracking-wide mb-0.5 uppercase">
+                        <h1 className="text-base sm:text-xl font-display font-bold tracking-wide mb-0.5 uppercase">
                             {step === 1 ? 'Create Account' : 'Verify Your Email'}
                         </h1>
                         {step === 2 && (
-                            <p className="text-white/50 text-[9px] leading-relaxed">
+                            <p className="text-white/50 text-[9px] sm:text-xs leading-relaxed">
                                 We've sent a verification code to {email}
                             </p>
                         )}
@@ -215,50 +215,50 @@ export default function Signup() {
 
                     {/* Step 1: Details Entry */}
                     {step === 1 && (
-                        <form onSubmit={handleSendCode} className="space-y-2">
+                        <form onSubmit={handleSendCode} className="space-y-2 sm:space-y-3.5">
                             {/* Username */}
-                            <div className="space-y-0.5">
-                                <label className="text-[8px] uppercase tracking-wider text-white/40 font-bold block">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <label className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 font-bold block">
                                     Username
                                 </label>
                                 <div className="relative group">
-                                    <User size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                    <User size={12} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                     <input
                                         type="text"
                                         placeholder="Choose username"
                                         value={username}
                                         onChange={e => setUsername(e.target.value)}
                                         required
-                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 rounded-lg text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 sm:py-2.5 sm:pl-11 sm:pr-4 rounded-lg text-white placeholder-white/20 text-xs sm:text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                     />
                                 </div>
                             </div>
 
                             {/* Email */}
-                            <div className="space-y-0.5">
-                                <label className="text-[8px] uppercase tracking-wider text-white/40 font-bold block">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <label className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 font-bold block">
                                     Email Address
                                 </label>
                                 <div className="relative group">
-                                    <Mail size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                    <Mail size={12} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                     <input
                                         type="email"
                                         placeholder="yourname@domain.com"
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         required
-                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 rounded-lg text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 sm:py-2.5 sm:pl-11 sm:pr-4 rounded-lg text-white placeholder-white/20 text-xs sm:text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                     />
                                 </div>
                             </div>
 
                             {/* Password */}
-                            <div className="space-y-0.5">
-                                <label className="text-[8px] uppercase tracking-wider text-white/40 font-bold block">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <label className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 font-bold block">
                                     Password
                                 </label>
                                 <div className="relative group">
-                                    <Lock size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                    <Lock size={12} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                     <input
                                         type="password"
                                         placeholder="Minimum 6 characters"
@@ -266,18 +266,18 @@ export default function Signup() {
                                         onChange={e => setPassword(e.target.value)}
                                         required
                                         minLength={6}
-                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 rounded-lg text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 sm:py-2.5 sm:pl-11 sm:pr-4 rounded-lg text-white placeholder-white/20 text-xs sm:text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                     />
                                 </div>
                             </div>
 
                             {/* Confirm Password */}
-                            <div className="space-y-0.5">
-                                <label className="text-[8px] uppercase tracking-wider text-white/40 font-bold block">
+                            <div className="space-y-0.5 sm:space-y-1">
+                                <label className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 font-bold block">
                                     Confirm Password
                                 </label>
                                 <div className="relative group">
-                                    <Lock size={12} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors" />
+                                    <Lock size={12} className="absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[#00FF87] transition-colors w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                     <input
                                         type="password"
                                         placeholder="Match password"
@@ -285,14 +285,14 @@ export default function Signup() {
                                         onChange={e => setConfirmPassword(e.target.value)}
                                         required
                                         minLength={6}
-                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 rounded-lg text-white placeholder-white/20 text-xs focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
+                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 pl-9 pr-3 py-1.5 sm:py-2.5 sm:pl-11 sm:pr-4 rounded-lg text-white placeholder-white/20 text-xs sm:text-sm focus:outline-none focus:shadow-[0_0_15px_rgba(0,255,135,0.04)] transition-all font-body"
                                     />
                                 </div>
                             </div>
 
                             {error && (
-                                <div className="flex items-center gap-1.5 text-red-400 text-[10px] bg-red-500/10 border border-red-500/20 rounded-lg px-2 py-1.5">
-                                    <AlertCircle size={12} className="shrink-0" />
+                                <div className="flex items-center gap-1.5 text-red-400 text-[10px] sm:text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2.5">
+                                    <AlertCircle size={12} className="shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span>{error}</span>
                                 </div>
                             )}
@@ -300,11 +300,11 @@ export default function Signup() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full py-1.5 mt-2 rounded-lg bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_15px_rgba(0,255,135,0.25)] text-black font-black text-[10px] tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+                                className="w-full py-1.5 sm:py-2.5 mt-2 sm:mt-3 rounded-lg bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_15px_rgba(0,255,135,0.25)] text-black font-black text-[10px] sm:text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
                             >
-                                {loading && <Loader2 size={12} className="animate-spin" />}
+                                {loading && <Loader2 size={12} className="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                 <span>Get Verification Code</span>
-                                <ArrowRight size={12} />
+                                <ArrowRight size={12} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </button>
                         </form>
                     )}
@@ -313,11 +313,11 @@ export default function Signup() {
                     {step === 2 && (
                         <form onSubmit={handleVerifyAndRegister} className="space-y-3">
                             {/* Locked details preview */}
-                            <div className="p-2 bg-[#0B1525]/60 border border-white/5 rounded-lg space-y-0.5 text-[9px] text-white/50">
+                            <div className="p-2 bg-[#0B1525]/60 border border-white/5 rounded-lg space-y-0.5 text-[9px] sm:text-xs text-white/50">
                                 <p>Username: <strong className="text-white">{username}</strong></p>
                                 <p>Email: <strong className="text-white">{email}</strong></p>
                                 {devCode && (
-                                    <p className="text-primary mt-1 font-mono font-bold text-[10px] bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                                    <p className="text-primary mt-1 font-mono font-bold text-[10px] sm:text-xs bg-primary/10 px-2 py-1 rounded border border-primary/20">
                                         Dev Verification Code: {devCode}
                                     </p>
                                 )}
@@ -325,11 +325,11 @@ export default function Signup() {
 
                             {/* OTP Code */}
                             <div className="space-y-1">
-                                <label className="text-[8px] uppercase tracking-wider text-white/40 font-bold block text-center">
+                                <label className="text-[8px] sm:text-[10px] uppercase tracking-wider text-white/40 font-bold block text-center">
                                     Enter 6-Digit Verification Code
                                 </label>
                                 <div className="relative group">
-                                    <ShieldCheck size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+                                    <ShieldCheck size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <input
                                         type="text"
                                         placeholder="000000"
@@ -337,22 +337,22 @@ export default function Signup() {
                                         value={code}
                                         onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                         required
-                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 rounded-lg pl-9 pr-3 py-1.5 text-white placeholder-white/20 focus:outline-none text-xs tracking-[0.2em] font-mono text-center transition-all focus:shadow-[0_0_15px_rgba(0,255,135,0.04)]"
+                                        className="w-full bg-[#0B1525]/60 border border-white/5 focus:border-[#00FF87]/50 rounded-lg pl-9 pr-3 py-1.5 sm:py-2.5 text-white placeholder-white/20 focus:outline-none text-xs sm:text-sm tracking-[0.2em] font-mono text-center transition-all focus:shadow-[0_0_15px_rgba(0,255,135,0.04)]"
                                     />
                                 </div>
 
-                                <div className="flex justify-between items-center px-0.5 pt-0.5">
+                                <div className="flex justify-between items-center px-0.5 pt-0.5 sm:px-1 sm:pt-1">
                                     <button
                                         type="button"
                                         onClick={() => setStep(1)}
-                                        className="text-[8px] text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors cursor-pointer"
+                                        className="text-[8px] sm:text-[10px] text-white/40 hover:text-white uppercase tracking-widest font-bold transition-colors cursor-pointer"
                                     >
                                         ← Edit details
                                     </button>
                                     <button
                                         type="button"
                                         onClick={handleResendCode}
-                                        className="text-[8px] text-[#00FF87]/80 hover:text-[#00FF87] uppercase tracking-widest font-bold transition-colors cursor-pointer"
+                                        className="text-[8px] sm:text-[10px] text-[#00FF87]/80 hover:text-[#00FF87] uppercase tracking-widest font-bold transition-colors cursor-pointer"
                                     >
                                         Resend Code
                                     </button>
@@ -360,8 +360,8 @@ export default function Signup() {
                             </div>
 
                             {error && (
-                                <div className="flex items-center gap-1.5 text-red-400 text-[10px] bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-1.5">
-                                    <AlertCircle size={12} className="shrink-0" />
+                                <div className="flex items-center gap-1.5 text-red-400 text-[10px] sm:text-xs bg-red-500/10 border border-red-500/20 rounded-lg px-2.5 py-1.5 sm:px-3 sm:py-2.5">
+                                    <AlertCircle size={12} className="shrink-0 w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                     <span>{error}</span>
                                 </div>
                             )}
@@ -369,25 +369,25 @@ export default function Signup() {
                             <button
                                 type="submit"
                                 disabled={loading || code.length !== 6}
-                                className="w-full py-1.5 mt-2 rounded-lg bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_15px_rgba(0,255,135,0.25)] text-black font-black text-[10px] tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
+                                className="w-full py-1.5 sm:py-2.5 mt-2 sm:mt-3 rounded-lg bg-[#00FF87] hover:bg-[#00FF87]/90 hover:shadow-[0_0_15px_rgba(0,255,135,0.25)] text-black font-black text-[10px] sm:text-xs tracking-widest uppercase transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 cursor-pointer"
                             >
-                                {loading && <Loader2 size={12} className="animate-spin" />}
+                                {loading && <Loader2 size={12} className="animate-spin w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                                 <span>Verify & Create Account</span>
-                                <ArrowRight size={12} />
+                                <ArrowRight size={12} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                             </button>
                         </form>
                     )}
 
                     {/* Social Logins */}
-                    <div className="mt-4 flex flex-col items-center">
-                        <div className="relative flex items-center justify-center mb-3 w-full">
+                    <div className="mt-4 sm:mt-5 flex flex-col items-center">
+                        <div className="relative flex items-center justify-center mb-3 sm:mb-4 w-full">
                             <div className="absolute inset-0 w-full border-t border-white/5" />
-                            <span className="relative z-10 bg-[#0b121e] px-2 text-white/30 text-[8px] uppercase tracking-widest font-black">
+                            <span className="relative z-10 bg-[#0b121e] px-2 sm:px-3 text-white/30 text-[8px] sm:text-[10px] uppercase tracking-widest font-black">
                                 Or Continue With
                             </span>
                         </div>
 
-                        <div className="w-full space-y-2">
+                        <div className="w-full space-y-2 sm:space-y-2.5">
                             <div className="w-full flex justify-center">
                                 <div id="google-signup-btn" className="w-full flex justify-center" />
                             </div>
@@ -395,9 +395,9 @@ export default function Signup() {
                             <button
                                 type="button"
                                 onClick={() => handleSocialSignup('Facebook')}
-                                className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg border border-white/5 hover:border-white/10 bg-[#0B1525]/30 hover:bg-[#0B1525]/50 transition-all text-[10px] font-bold cursor-pointer"
+                                className="w-full flex items-center justify-center gap-1.5 py-1.5 sm:py-2.5 rounded-lg border border-white/5 hover:border-white/10 bg-[#0B1525]/30 hover:bg-[#0B1525]/50 transition-all text-[10px] sm:text-xs font-bold cursor-pointer"
                             >
-                                <svg className="w-3 h-3 fill-[#1877F2] shrink-0" viewBox="0 0 24 24">
+                                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-[#1877F2] shrink-0" viewBox="0 0 24 24">
                                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                                 </svg>
                                 Continue with Facebook
@@ -406,7 +406,7 @@ export default function Signup() {
                     </div>
 
                     {/* Toggle */}
-                    <p className="text-center text-[10px] text-white/30 mt-4 font-medium">
+                    <p className="text-center text-[10px] sm:text-xs text-white/30 mt-4 sm:mt-6 font-medium">
                         Already have an account?{' '}
                         <Link to="/login" className="text-[#00FF87] hover:text-[#33ff9f] font-bold transition-colors">
                             Log in instead
