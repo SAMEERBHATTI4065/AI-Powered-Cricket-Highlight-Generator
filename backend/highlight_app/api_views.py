@@ -44,7 +44,7 @@ def check_session_access(request, session_id):
 
 def stream_video_api(request, session_id):
     """
-    HTTP Range support for video seeking.
+    HTTP Range support for video seeking using FileResponse for maximum compatibility.
     """
     session, err_resp = check_session_access(request, session_id)
     if err_resp:
@@ -56,31 +56,32 @@ def stream_video_api(request, session_id):
     if not os.path.exists(file_path):
         return JsonResponse({'error': 'File not found on disk'}, status=404)
 
-    range_header = request.META.get('HTTP_RANGE', '').strip()
-    range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
     size = os.path.getsize(file_path)
     content_type = 'video/mp4'
+    range_header = request.META.get('HTTP_RANGE', '').strip()
 
-    if range_match:
-        first_byte, last_byte = range_match.groups()
-        first_byte = int(first_byte) if first_byte else 0
-        last_byte = int(last_byte) if last_byte else size - 1
+    if range_header:
+        try:
+            ranges = range_header.replace('bytes=', '').split('-')
+            first_byte = int(ranges[0]) if ranges[0] else 0
+            last_byte = int(ranges[1]) if len(ranges) > 1 and ranges[1] else size - 1
+        except ValueError:
+            first_byte = 0
+            last_byte = size - 1
+
+        if first_byte >= size:
+            first_byte = size - 1
         if last_byte >= size:
             last_byte = size - 1
-        length = last_byte - first_byte + 1
-        
-        def file_iterator(path, offset, chunk_size=8192):
-            with open(path, 'rb') as f:
-                f.seek(offset)
-                remaining = length
-                while remaining > 0:
-                    data = f.read(min(chunk_size, remaining))
-                    if not data:
-                        break
-                    yield data
-                    remaining -= len(data)
+        if first_byte > last_byte:
+            first_byte = last_byte
 
-        response = StreamingHttpResponse(file_iterator(file_path, first_byte), status=206, content_type=content_type)
+        length = last_byte - first_byte + 1
+
+        f = open(file_path, 'rb')
+        f.seek(first_byte)
+
+        response = FileResponse(f, status=206, content_type=content_type)
         response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
         response['Accept-Ranges'] = 'bytes'
         response['Content-Length'] = str(length)
@@ -488,32 +489,32 @@ def serve_demo_video(request):
             file_path = alt_path
 
     if file_path.exists() and file_path.stat().st_size > 1024 * 1024:
-        # Use HTTP Range requests for smooth video streaming and compatibility
-        range_header = request.META.get('HTTP_RANGE', '').strip()
-        range_match = re.match(r'bytes=(\d+)-(\d*)', range_header)
         size = file_path.stat().st_size
         content_type = 'video/mp4'
+        range_header = request.META.get('HTTP_RANGE', '').strip()
 
-        if range_match:
-            first_byte, last_byte = range_match.groups()
-            first_byte = int(first_byte) if first_byte else 0
-            last_byte = int(last_byte) if last_byte else size - 1
+        if range_header:
+            try:
+                ranges = range_header.replace('bytes=', '').split('-')
+                first_byte = int(ranges[0]) if ranges[0] else 0
+                last_byte = int(ranges[1]) if len(ranges) > 1 and ranges[1] else size - 1
+            except ValueError:
+                first_byte = 0
+                last_byte = size - 1
+
+            if first_byte >= size:
+                first_byte = size - 1
             if last_byte >= size:
                 last_byte = size - 1
-            length = last_byte - first_byte + 1
-            
-            def file_iterator(path, offset, chunk_size=8192):
-                with open(path, 'rb') as f:
-                    f.seek(offset)
-                    remaining = length
-                    while remaining > 0:
-                        data = f.read(min(chunk_size, remaining))
-                        if not data:
-                            break
-                        yield data
-                        remaining -= len(data)
+            if first_byte > last_byte:
+                first_byte = last_byte
 
-            response = StreamingHttpResponse(file_iterator(file_path, first_byte), status=206, content_type=content_type)
+            length = last_byte - first_byte + 1
+
+            f = open(file_path, 'rb')
+            f.seek(first_byte)
+
+            response = FileResponse(f, status=206, content_type=content_type)
             response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
             response['Accept-Ranges'] = 'bytes'
             response['Content-Length'] = str(length)
