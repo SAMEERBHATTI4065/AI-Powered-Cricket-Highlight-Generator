@@ -316,6 +316,11 @@ export default function Signup() {
                             <div className="p-2 bg-[#0B1525]/60 border border-white/5 rounded-lg space-y-0.5 text-[9px] text-white/50">
                                 <p>Username: <strong className="text-white">{username}</strong></p>
                                 <p>Email: <strong className="text-white">{email}</strong></p>
+                                {devCode && (
+                                    <p className="text-primary mt-1 font-mono font-bold text-[10px] bg-primary/10 px-2 py-1 rounded border border-primary/20">
+                                        Dev Verification Code: {devCode}
+                                    </p>
+                                )}
                             </div>
 
                             {/* OTP Code */}
