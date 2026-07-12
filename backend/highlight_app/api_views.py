@@ -169,7 +169,8 @@ def upload_video_api(request):
     processing_params = {
         'format': request.POST.get('format', 'MP4'),
         'depth': request.POST.get('depth', 'Standard'),
-        'style': request.POST.get('style', 'Professional')
+        'style': request.POST.get('style', 'Professional'),
+        'is_test_video': is_test_video
     }
     
     if is_test_video:
@@ -435,25 +436,33 @@ def ensure_valid_demo_video():
         if p.exists() and p.stat().st_size > 1024 * 1024:
             return p
 
-    # 3. If no valid MP4 exists locally, download a small, valid 15MB sample video as fallback
+    # 3. If no valid MP4 exists locally, download the actual cricket demo video from CDN/Git LFS
     import urllib.request
-    logger.info("Demo video not found locally. Downloading sample video from CDN...")
+    logger.info("Demo video not found locally. Downloading real cricket demo video...")
     
-    url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
-    try:
-        # Download with a custom User-Agent to prevent 403 Forbidden from CDNs/GCS
-        req = urllib.request.Request(
-            url,
-            headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-            }
-        )
-        with urllib.request.urlopen(req, timeout=30) as response, open(demo_path, 'wb') as out_file:
-            shutil.copyfileobj(response, out_file)
-        logger.info(f"Downloaded sample video successfully to {demo_path}")
+    urls = [
+        "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4",
+        "https://huggingface.co/spaces/Sameer4065/cricket-gen/resolve/main/backend/static/demo/demo-video.mp4"
+    ]
+    download_success = False
+    for url in urls:
+        try:
+            req = urllib.request.Request(
+                url,
+                headers={
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                }
+            )
+            with urllib.request.urlopen(req, timeout=60) as response, open(demo_path, 'wb') as out_file:
+                shutil.copyfileobj(response, out_file)
+            logger.info(f"Downloaded real cricket video successfully from {url} to {demo_path}")
+            download_success = True
+            break
+        except Exception as e:
+            logger.error(f"Failed to download demo video from {url}: {e}")
+            
+    if download_success:
         return demo_path
-    except Exception as e:
-        logger.error(f"Failed to download sample video: {e}")
         
     return None
 
@@ -526,7 +535,7 @@ def serve_demo_video(request):
         f"(size={file_path.stat().st_size if file_path.exists() else 'N/A'}). "
         f"Redirecting to CDN fallback."
     )
-    cdn_url = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+    cdn_url = "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4"
     return redirect(cdn_url)
 
 
