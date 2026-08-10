@@ -130,51 +130,55 @@ def verify_code_view(request):
 def register_view(request):
     """Register a new user account (requires verified email)."""
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-    username = data.get('username', '').strip()
-    email = data.get('email', '').strip().lower()
-    password = data.get('password', '')
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip().lower()
+        password = data.get('password', '')
 
-    if not username or not password or not email:
-        return JsonResponse({'error': 'Username, email and password are required.'}, status=400)
+        if not username or not password or not email:
+            return JsonResponse({'error': 'Username, email and password are required.'}, status=400)
 
-    if len(password) < 6:
-        return JsonResponse({'error': 'Password must be at least 6 characters.'}, status=400)
+        if len(password) < 6:
+            return JsonResponse({'error': 'Password must be at least 6 characters.'}, status=400)
 
-    if User.objects.filter(username=username).exists():
-        return JsonResponse({'error': 'Username already taken.'}, status=409)
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'error': 'Username already taken.'}, status=409)
 
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({'error': 'Email already in use.'}, status=409)
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'Email already in use.'}, status=409)
 
-    # Verify that the email was verified via OTP
-    verified = EmailVerificationCode.objects.filter(
-        email=email, is_used=True
-    ).exists()
-    if not verified:
-        return JsonResponse({'error': 'Email not verified. Please verify your email first.'}, status=400)
+        # Verify that the email was verified via OTP
+        verified = EmailVerificationCode.objects.filter(
+            email=email, is_used=True
+        ).exists()
+        if not verified:
+            return JsonResponse({'error': 'Email not verified. Please verify your email first.'}, status=400)
 
-    user = User.objects.create_user(username=username, email=email, password=password)
-    login(request, user)
-    token, _ = Token.objects.get_or_create(user=user)
+        user = User.objects.create_user(username=username, email=email, password=password)
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        token_obj, _ = Token.objects.get_or_create(user=user)
 
-    # Send welcome email to new user
-    try:
-        send_mail(
-            subject='🏏 Welcome to CricketAI!',
-            message=f'Hi {username},\n\nWelcome to CricketAI! Your account has been created successfully.\n\nYou can now upload cricket match videos and get AI-powered highlights and reports.\n\nHappy analyzing!\n— The CricketAI Team',
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[email],
-            fail_silently=True,
-        )
+        # Send welcome email to new user
+        try:
+            send_mail(
+                subject='🏏 Welcome to CricketAI!',
+                message=f'Hi {username},\n\nWelcome to CricketAI! Your account has been created successfully.\n\nYou can now upload cricket match videos and get AI-powered highlights and reports.\n\nHappy analyzing!\n— The CricketAI Team',
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[email],
+                fail_silently=True,
+            )
+        except Exception as e:
+            logger.error(f"Failed to send welcome email: {e}")
+
+        logger.info(f"New user registered: {username}")
+        return JsonResponse({'success': True, 'token': token_obj.key, 'user': _user_dict(user)}, status=201)
     except Exception as e:
-        logger.error(f"Failed to send welcome email: {e}")
-
-    logger.info(f"New user registered: {username}")
-    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)}, status=201)
+        logger.error(f"Unhandled exception in register_view: {e}", exc_info=True)
+        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)
 
 
 @csrf_exempt
@@ -182,37 +186,41 @@ def register_view(request):
 def login_view(request):
     """Login with username + password. Sends welcome-back email."""
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
-    username = data.get('username', '').strip()
-    password = data.get('password', '')
-
-    if not username or not password:
-        return JsonResponse({'error': 'Username and password are required.'}, status=400)
-
-    user = authenticate(request, username=username, password=password)
-    if user is None:
-        return JsonResponse({'error': 'Invalid username or password.'}, status=401)
-
-    login(request, user)
-    token, _ = Token.objects.get_or_create(user=user)
-    logger.info(f"User logged in: {username}")
-
-    # Send welcome-back email asynchronously
-    if user.email:
         try:
-            send_async_email.delay(
-                subject='🏏 CricketAI — Login Notification',
-                message=f'Hi {user.username},\n\nYou have successfully logged into CricketAI.\n\nIf this was not you, please change your password immediately.\n\n— The CricketAI Team',
-                recipient_list=[user.email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            logger.error(f"Failed to queue login notification email: {e}")
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
+        username = data.get('username', '').strip()
+        password = data.get('password', '')
+
+        if not username or not password:
+            return JsonResponse({'error': 'Username and password are required.'}, status=400)
+
+        user = authenticate(request, username=username, password=password)
+        if user is None:
+            return JsonResponse({'error': 'Invalid username or password.'}, status=401)
+
+        login(request, user)
+        token, _ = Token.objects.get_or_create(user=user)
+        logger.info(f"User logged in: {username}")
+
+        # Send welcome-back email asynchronously
+        if user.email:
+            try:
+                send_async_email.delay(
+                    subject='🏏 CricketAI — Login Notification',
+                    message=f'Hi {user.username},\n\nYou have successfully logged into CricketAI.\n\nIf this was not you, please change your password immediately.\n\n— The CricketAI Team',
+                    recipient_list=[user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                logger.error(f"Failed to queue login notification email: {e}")
+
+        return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
+    except Exception as e:
+        logger.error(f"Unhandled exception in login_view: {e}", exc_info=True)
+        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)
 
 
 @csrf_exempt
@@ -310,72 +318,76 @@ def _verify_google_token(token):
 def google_login_view(request):
     """Verify Google token, login or auto-register user, set session cookie."""
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
-
-    token = data.get('credential')
-    if not token:
-        return JsonResponse({'error': 'Google token is required.'}, status=400)
-
-    payload = _verify_google_token(token)
-    if not payload:
-        return JsonResponse({'error': 'Invalid or expired Google token.'}, status=400)
-
-    email = payload.get('email', '').strip().lower()
-    if not email:
-        return JsonResponse({'error': 'Email not provided by Google.'}, status=400)
-
-    user = User.objects.filter(email=email).first()
-    is_new = False
-
-    if not user:
-        # Create non-colliding username from email
-        prefix = email.split('@')[0]
-        # only keep alphanumeric, underscore, hyphen
-        username = "".join(c for c in prefix if c.isalnum() or c in ['_', '-'])
-        if not username:
-            username = "google_user"
-        base_username = username
-        counter = 1
-        while User.objects.filter(username=username).exists():
-            username = f"{base_username}{counter}"
-            counter += 1
-
-        user = User.objects.create_user(
-            username=username,
-            email=email,
-            password=User.objects.make_random_password()
-        )
-        user.first_name = payload.get('given_name', '')
-        user.last_name = payload.get('family_name', '')
-        user.save()
-        is_new = True
-
-    login(request, user)
-    token, _ = Token.objects.get_or_create(user=user)
-    logger.info(f"User logged in via Google: {user.username}")
-
-    # Send relevant notification emails asynchronously
-    if is_new:
         try:
-            send_async_email.delay(
-                subject='🏏 Welcome to CricketAI!',
-                message=f'Hi {user.username},\n\nWelcome to CricketAI! Your account has been created via Google Sign-In.\n\nEnjoy auto-generating highlights!\n— The CricketAI Team',
-                recipient_list=[email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            logger.error(f"Failed to queue Google welcome email: {e}")
-    else:
-        try:
-            send_async_email.delay(
-                subject='🏏 CricketAI — Login Notification',
-                message=f'Hi {user.username},\n\nYou successfully logged in using Google.\n— The CricketAI Team',
-                recipient_list=[email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            logger.error(f"Failed to queue Google login email: {e}")
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-    return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
+        token = data.get('credential')
+        if not token:
+            return JsonResponse({'error': 'Google token is required.'}, status=400)
+
+        payload = _verify_google_token(token)
+        if not payload:
+            return JsonResponse({'error': 'Invalid or expired Google token.'}, status=400)
+
+        email = payload.get('email', '').strip().lower()
+        if not email:
+            return JsonResponse({'error': 'Email not provided by Google.'}, status=400)
+
+        user = User.objects.filter(email=email).first()
+        is_new = False
+
+        if not user:
+            # Create non-colliding username from email
+            prefix = email.split('@')[0]
+            # only keep alphanumeric, underscore, hyphen
+            username = "".join(c for c in prefix if c.isalnum() or c in ['_', '-'])
+            if not username:
+                username = "google_user"
+            base_username = username
+            counter = 1
+            while User.objects.filter(username=username).exists():
+                username = f"{base_username}{counter}"
+                counter += 1
+
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=User.objects.make_random_password()
+            )
+            user.first_name = payload.get('given_name', '')
+            user.last_name = payload.get('family_name', '')
+            user.save()
+            is_new = True
+
+        login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+        token_obj, _ = Token.objects.get_or_create(user=user)
+        logger.info(f"User logged in via Google: {user.username}")
+
+        # Send relevant notification emails asynchronously
+        if is_new:
+            try:
+                send_async_email.delay(
+                    subject='🏏 Welcome to CricketAI!',
+                    message=f'Hi {user.username},\n\nWelcome to CricketAI! Your account has been created via Google Sign-In.\n\nEnjoy auto-generating highlights!\n— The CricketAI Team',
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                logger.error(f"Failed to queue Google welcome email: {e}")
+        else:
+            try:
+                send_async_email.delay(
+                    subject='🏏 CricketAI — Login Notification',
+                    message=f'Hi {user.username},\n\nYou successfully logged in using Google.\n— The CricketAI Team',
+                    recipient_list=[email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                logger.error(f"Failed to queue Google login email: {e}")
+
+        return JsonResponse({'success': True, 'token': token_obj.key, 'user': _user_dict(user)})
+    except Exception as e:
+        logger.error(f"Unhandled exception in google_login_view: {e}", exc_info=True)
+        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)

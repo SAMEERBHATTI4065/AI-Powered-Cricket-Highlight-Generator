@@ -20,6 +20,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+async function handleFetchResponse(res: Response, defaultError: string) {
+    const contentType = res.headers.get('content-type');
+    let data: any;
+    if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+    } else {
+        const text = await res.text();
+        throw new Error(`Server error (${res.status}): Non-JSON response received.`);
+    }
+    if (!res.ok) {
+        throw new Error(data.error || defaultError);
+    }
+    return data;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
@@ -46,8 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             credentials: 'include',
             body: JSON.stringify({ username, password }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Login failed');
+        const data = await handleFetchResponse(res, 'Login failed');
         if (data.token) {
             localStorage.setItem('auth_token', data.token);
         }
@@ -62,8 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             credentials: 'include',
             body: JSON.stringify({ username, email, password }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Registration failed');
+        const data = await handleFetchResponse(res, 'Registration failed');
         if (data.token) {
             localStorage.setItem('auth_token', data.token);
         }
@@ -78,8 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             credentials: 'include',
             body: JSON.stringify({ credential }),
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Google login failed');
+        const data = await handleFetchResponse(res, 'Google login failed');
         if (data.token) {
             localStorage.setItem('auth_token', data.token);
         }
