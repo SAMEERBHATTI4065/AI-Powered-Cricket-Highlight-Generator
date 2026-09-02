@@ -82,9 +82,11 @@ frontend/.vite/
 *.mkv
 *.webm
 
-# Exceptions
-!frontend/public/demo-video.mp4
-!backend/static/demo/demo-video.mp4
-!backend/static/demo/demo.mp4
-!media/uploads/.gitkeep
+# Test scratch files
+backend/test_event_analysis_speed/
+backend/test_frame_21.jpg
+backend/media/
+run_local.bat
+
+
 

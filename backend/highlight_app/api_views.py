@@ -341,6 +341,79 @@ def get_status_api(request, job_id):
     resp['Cache-Control'] = 'no-store'
     return resp
 
+def stream_clip_api(request, session_id, event_id):
+    """
+    HTTP Range support for individual event video clips (highlight_<event_id>.mp4).
+    Streams the exact individual clip cut during processing before merging.
+    Fallback to main highlight video stream if individual clip file is not available.
+    """
+    session, err_resp = check_session_access(request, session_id)
+    if err_resp:
+        return err_resp
+
+    # Look for individual event clip saved for this session
+    clip_rel_path = os.path.join('cricket_sessions', session_id, 'clips', f"highlight_{event_id}.mp4")
+    file_path = os.path.join(settings.MEDIA_ROOT, clip_rel_path)
+
+    if not os.path.exists(file_path):
+        # Alternative path check
+        alt_rel_path = os.path.join('cricket_results', session_id, 'verified_clips', f"highlight_{event_id}.mp4")
+        alt_path = os.path.join(settings.MEDIA_ROOT, alt_rel_path)
+        if os.path.exists(alt_path):
+            file_path = alt_path
+
+    if not os.path.exists(file_path):
+        # Fallback to main session highlight video
+        if session.video_path:
+            file_path = os.path.join(settings.MEDIA_ROOT, session.video_path)
+
+    if not os.path.exists(file_path):
+        return JsonResponse({'error': 'Clip file not found'}, status=404)
+
+    size = os.path.getsize(file_path)
+    content_type = 'video/mp4'
+    range_header = request.META.get('HTTP_RANGE', '').strip()
+
+    if range_header:
+        try:
+            ranges = range_header.replace('bytes=', '').split('-')
+            first_byte = int(ranges[0]) if ranges[0] else 0
+            last_byte = int(ranges[1]) if len(ranges) > 1 and ranges[1] else size - 1
+        except ValueError:
+            first_byte = 0
+            last_byte = size - 1
+
+        if first_byte >= size:
+            first_byte = size - 1
+        if last_byte >= size:
+            last_byte = size - 1
+        if first_byte > last_byte:
+            first_byte = last_byte
+
+        length = last_byte - first_byte + 1
+
+        def file_iterator(path, offset, chunk_size=8192):
+            with open(path, 'rb') as f:
+                f.seek(offset)
+                remaining = length
+                while remaining > 0:
+                    data = f.read(min(chunk_size, remaining))
+                    if not data:
+                        break
+                    yield data
+                    remaining -= len(data)
+
+        response = StreamingHttpResponse(file_iterator(file_path, first_byte), status=206, content_type=content_type)
+        response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
+        response['Accept-Ranges'] = 'bytes'
+        response['Content-Length'] = str(length)
+    else:
+        response = FileResponse(open(file_path, 'rb'), content_type=content_type)
+        response['Accept-Ranges'] = 'bytes'
+        response['Content-Length'] = str(size)
+
+    return response
+
 def get_results_api(request, session_id):
     session, err_resp = check_session_access(request, session_id)
     if err_resp:
@@ -353,6 +426,12 @@ def get_results_api(request, session_id):
         
     # Process events through our custom serializer (adds timestamp_formatted, event_label, and validates range)
     serialized_events = serialize_events(session.events_json)
+    
+    # Attach direct clip_url to each individual event
+    for ev in serialized_events:
+        ev_id = ev.get('event_id')
+        if ev_id is not None:
+            ev['clip_url'] = f"/api/results/{session_id}/clip/{ev_id}/?token={session.share_token}"
         
     return JsonResponse({
         'session_id': session_id,
@@ -578,6 +657,229 @@ def serve_demo_video(request):
     )
     cdn_url = "https://media.githubusercontent.com/media/SAMEERBHATTI4065/AI-Powered-Cricket-Highlight-Generator/main/backend/static/demo/demo-video.mp4"
     return redirect(cdn_url)
+
+
+# ---------------------------------------------------------------------------
+# 📱 1-CLICK TIKTOK & REELS GENERATOR API ENDPOINTS
+# ---------------------------------------------------------------------------
+
+@csrf_exempt
+def generate_reel_api(request, session_id):
+    """
+    Generates a high-engagement 9:16 / 1:1 / 4:5 vertical reel for TikTok & Instagram.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+    session, err_resp = check_session_access(request, session_id)
+    if err_resp:
+        return err_resp
+
+    try:
+        data = json.loads(request.body.decode('utf-8')) if request.body else {}
+    except Exception:
+        data = request.POST.dict()
+
+    event_id = data.get('event_id', '0')
+    aspect_ratio = data.get('aspect_ratio', '9:16')
+    layout = data.get('layout', 'smart_crop')
+    caption_style = data.get('caption_style', 'kinetic_bold')
+    editing_style = data.get('editing_style', 'hyper_viral')  # hyper_viral | cinematic | raw_action
+    custom_caption = data.get('custom_caption', '')
+    hype_audio = data.get('hype_audio', True)
+
+    if not session.video_path:
+        return JsonResponse({'error': 'No video highlights available for this session'}, status=404)
+
+    video_full_path = os.path.join(settings.MEDIA_ROOT, session.video_path)
+    if not os.path.exists(video_full_path):
+        return JsonResponse({'error': 'Source highlight file not found on disk'}, status=404)
+
+    try:
+        from processing_engine.reel_generator import ReelGenerator
+    except ImportError:
+        try:
+            from ..processing_engine.reel_generator import ReelGenerator
+        except ImportError:
+            import reel_generator as ReelGenerator
+
+    generator = ReelGenerator(settings.MEDIA_ROOT)
+
+    if isinstance(event_id, list) or str(event_id).lower() in ['top_montage', 'montage']:
+        result = generator.generate_montage_reel(
+            video_full_path,
+            session_id,
+            session.events_json or [],
+            aspect_ratio=aspect_ratio,
+            layout=layout,
+            caption_style=caption_style,
+            editing_style=editing_style,
+            selected_event_ids=event_id if isinstance(event_id, list) else None
+        )
+    else:
+        # Match event by ID or fallback
+        target_event = None
+        if session.events_json:
+            for ev in session.events_json:
+                if str(ev.get('event_id')) == str(event_id):
+                    target_event = ev
+                    break
+            if not target_event:
+                try:
+                    idx = int(event_id)
+                    if 0 <= idx < len(session.events_json):
+                        target_event = session.events_json[idx]
+                except ValueError:
+                    pass
+
+        if not target_event:
+            target_event = {
+                'event_id': event_id,
+                'event_type': 'HIGHLIGHT',
+                'timestamp': 15,
+                'current': 'Viral Cricket Action'
+            }
+
+        result = generator.generate_single_event_reel(
+            video_full_path,
+            session_id,
+            target_event,
+            aspect_ratio=aspect_ratio,
+            layout=layout,
+            caption_style=caption_style,
+            editing_style=editing_style,
+            custom_caption=custom_caption,
+            hype_audio=hype_audio
+        )
+
+    if not result.get('success'):
+        return JsonResponse({'error': result.get('error', 'Failed to generate reel')}, status=500)
+
+    filename = result.get('reel_filename')
+    stream_url = f"/api/results/{session_id}/reels/{filename}/stream/?token={session.share_token}"
+    download_url = f"/api/results/{session_id}/reels/{filename}/download/?token={session.share_token}"
+
+    return JsonResponse({
+        'success': True,
+        'reel_filename': filename,
+        'stream_url': stream_url,
+        'download_url': download_url,
+        'aspect_ratio': aspect_ratio,
+        'layout': layout,
+        'event_type': result.get('event_type', 'MOMENT'),
+        'caption': result.get('caption', ''),
+        'duration': result.get('duration', 20),
+        'is_montage': result.get('is_montage', False)
+    })
+
+
+def stream_reel_api(request, session_id, reel_filename):
+    """
+    Streams the generated reel MP4 with HTTP byte-range support.
+    """
+    session, err_resp = check_session_access(request, session_id)
+    if err_resp:
+        return err_resp
+
+    reels_dir = Path(settings.MEDIA_ROOT) / 'cricket_sessions' / 'reels'
+    reel_path = reels_dir / reel_filename
+
+    if not reel_path.exists():
+        return JsonResponse({'error': 'Reel file not found on disk'}, status=404)
+
+    size = reel_path.stat().st_size
+    content_type = 'video/mp4'
+    range_header = request.META.get('HTTP_RANGE', '').strip()
+
+    if range_header:
+        try:
+            ranges = range_header.replace('bytes=', '').split('-')
+            first_byte = int(ranges[0]) if ranges[0] else 0
+            last_byte = int(ranges[1]) if len(ranges) > 1 and ranges[1] else size - 1
+        except ValueError:
+            first_byte = 0
+            last_byte = size - 1
+
+        if first_byte >= size:
+            first_byte = size - 1
+        if last_byte >= size:
+            last_byte = size - 1
+        if first_byte > last_byte:
+            first_byte = last_byte
+
+        length = last_byte - first_byte + 1
+
+        def file_iterator(path, offset, chunk_size=8192):
+            with open(path, 'rb') as f:
+                f.seek(offset)
+                remaining = length
+                while remaining > 0:
+                    data = f.read(min(chunk_size, remaining))
+                    if not data:
+                        break
+                    yield data
+                    remaining -= len(data)
+
+        response = StreamingHttpResponse(file_iterator(reel_path, first_byte), status=206, content_type=content_type)
+        response['Content-Range'] = f'bytes {first_byte}-{last_byte}/{size}'
+        response['Accept-Ranges'] = 'bytes'
+        response['Content-Length'] = str(length)
+    else:
+        response = FileResponse(open(reel_path, 'rb'), content_type=content_type)
+        response['Accept-Ranges'] = 'bytes'
+        response['Content-Length'] = str(size)
+
+    return response
+
+
+def download_reel_api(request, session_id, reel_filename):
+    """
+    Downloads the rendered reel video with a friendly social-media filename.
+    """
+    session, err_resp = check_session_access(request, session_id)
+    if err_resp:
+        return err_resp
+
+    reels_dir = Path(settings.MEDIA_ROOT) / 'cricket_sessions' / 'reels'
+    reel_path = reels_dir / reel_filename
+
+    if not reel_path.exists():
+        return JsonResponse({'error': 'Reel file not found on disk'}, status=404)
+
+    friendly_name = f"Cricket_Viral_Reel_{reel_filename}"
+    response = FileResponse(open(reel_path, 'rb'), content_type='video/mp4')
+    response['Content-Disposition'] = f'attachment; filename="{friendly_name}"'
+    return response
+
+
+def list_reels_api(request, session_id):
+    """
+    Lists all generated reels for this analysis session.
+    """
+    session, err_resp = check_session_access(request, session_id)
+    if err_resp:
+        return err_resp
+
+    reels_dir = Path(settings.MEDIA_ROOT) / 'cricket_sessions' / 'reels'
+    if not reels_dir.exists():
+        return JsonResponse({'reels': []})
+
+    pattern = f"*_{session_id}_*.mp4"
+    reel_files = list(reels_dir.glob(f"reel_{session_id}_*.mp4")) + list(reels_dir.glob(f"montage_{session_id}_*.mp4"))
+
+    reels_list = []
+    for rf in reel_files:
+        filename = rf.name
+        reels_list.append({
+            'filename': filename,
+            'size_bytes': rf.stat().st_size,
+            'created_at': rf.stat().st_mtime,
+            'stream_url': f"/api/results/{session_id}/reels/{filename}/stream/?token={session.share_token}",
+            'download_url': f"/api/results/{session_id}/reels/{filename}/download/?token={session.share_token}",
+        })
+
+    return JsonResponse({'reels': reels_list})
+
 
 
 

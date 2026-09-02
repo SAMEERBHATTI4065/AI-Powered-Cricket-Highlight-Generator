@@ -107,6 +107,21 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
             summary_text = "The match analysis is complete. We've identified all key milestones including boundaries and wickets. You can review each event in the timeline to see the specific action captured by our AI engine."
             _tlog("Using fallback summary", "WARN")
 
+        # Preserve individual verified event clips (cut before merging)
+        verified_clips_src = results_dir / 'verified_clips'
+        session_clips_dest = sessions_root / session_id / 'clips'
+        session_clips_dest.mkdir(parents=True, exist_ok=True)
+
+        if verified_clips_src.exists():
+            for clip_file in verified_clips_src.glob('highlight_*.mp4'):
+                shutil.copy(str(clip_file), str(session_clips_dest / clip_file.name))
+            _tlog(f"Preserved individual event clips in: {session_clips_dest}", "FILE")
+
+        for ev in verified_events:
+            ev_id = ev.get('event_id')
+            if ev_id is not None:
+                ev['clip_path'] = f"cricket_sessions/{session_id}/clips/highlight_{ev_id}.mp4"
+
         # Handle highlight video
         output_video_path = result_data.get('output_video')
         final_video_name = f"highlights_{session_id}.mp4"
@@ -135,7 +150,7 @@ def process_video_task(self, video_path, session_id, params=None, user_id=None, 
         session.save()
         _tlog(f"Database record updated for session: {session_id}", "OK")
 
-        # CLEANUP: Remove session temp folder (event_analysis, clips, etc)
+        # CLEANUP: Remove session temp folder (event_analysis, etc)
         _tlog("Cleaning up temporary processing files...", "CLEAN")
         shutil.rmtree(results_dir, ignore_errors=True)
         _tlog(f"Removed temp directory: {results_dir}", "CLEAN")

@@ -9,9 +9,10 @@ ENV PYTHONUNBUFFERED=1 \
 # Set work directory
 WORKDIR /app
 
-# Install minimal system dependencies
+# Install system dependencies (including ffmpeg for Reel generation)
 RUN apt-get update && apt-get install -y \
     postgresql-client \
+    ffmpeg \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements

@@ -9,6 +9,7 @@ urlpatterns = [
     path('results/<str:session_id>/share/', api_views.share_results_api, name='api_share'),
     path('results/<str:session_id>/download/highlight/', api_views.download_highlight_api, name='api_download_highlight'),
     path('results/<str:session_id>/stream/', api_views.stream_video_api, name='api_stream_video'),
+    path('results/<str:session_id>/clip/<str:event_id>/', api_views.stream_clip_api, name='api_stream_clip'),
     path('results/<str:session_id>/verify-token/', api_views.check_share_token, name='api_verify_token'),
     # Authentication
     path('auth/send-code/', auth_views.send_code_view, name='api_send_code'),
@@ -22,6 +23,11 @@ urlpatterns = [
     path('auth/history/', auth_views.history_view, name='api_history'),
     path('test-video-info/', api_views.test_video_info, name='api_test_video_info'),
     path('demo-video/', api_views.serve_demo_video, name='api_serve_demo_video'),
+    # 📱 1-Click Reels & TikTok Generator API Routes
+    path('results/<str:session_id>/reels/generate/', api_views.generate_reel_api, name='api_generate_reel'),
+    path('results/<str:session_id>/reels/', api_views.list_reels_api, name='api_list_reels'),
+    path('results/<str:session_id>/reels/<str:reel_filename>/stream/', api_views.stream_reel_api, name='api_stream_reel'),
+    path('results/<str:session_id>/reels/<str:reel_filename>/download/', api_views.download_reel_api, name='api_download_reel'),
 ]
 
 

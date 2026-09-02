@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Clock, Target, Trophy, Zap, ChevronRight, ArrowLeft, FileText, Share2, FileJson, Video, Play, Pause, Maximize2, MessageCircle, Twitter, Facebook, Copy, Youtube, X, RotateCcw, RotateCw } from "lucide-react";
+import { Download, Clock, Target, Trophy, Zap, ChevronRight, ArrowLeft, FileText, Share2, FileJson, Video, Play, Pause, Maximize2, MessageCircle, Twitter, Facebook, Copy, Youtube, X, RotateCcw, RotateCw, Smartphone, Sparkles, Flame } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
+import ReelStudioModal from "@/components/ReelStudioModal";
+import { ClipsGallery } from "@/components/ClipsGallery";
 
 const StatItem = ({ label, value, delay }: any) => {
   const [displayValue, setDisplayValue] = useState(0);
@@ -188,6 +190,15 @@ const ResultsPage = () => {
   const [hoverTooltip, setHoverTooltip] = useState<{ x: number, time: number } | null>(null);
   const [showControls, setShowControls] = useState(false);
   const controlsTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 📱 1-Click Reels Studio State
+  const [isReelStudioOpen, setIsReelStudioOpen] = useState(false);
+  const [selectedReelEventId, setSelectedReelEventId] = useState<string | number | (string | number)[] | undefined>(undefined);
+
+  const openReelStudio = (eventId?: string | number | (string | number)[]) => {
+    setSelectedReelEventId(eventId);
+    setIsReelStudioOpen(true);
+  };
 
   const handleVideoTap = () => {
     setShowControls(true);
@@ -648,39 +659,31 @@ const ResultsPage = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8, duration: 0.8 }}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-[-10px] sm:mt-[-15px] z-20 relative w-full max-w-[480px] sm:max-w-none mx-auto"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-[-10px] sm:mt-[-15px] z-20 relative w-full max-w-[620px] sm:max-w-none mx-auto"
         >
-          <motion.div
+          {/* Primary Actions (Download & Share) */}          <motion.div
             whileHover={{ scale: 1.02 }}
             className="relative w-full sm:w-auto"
           >
             <button
               onClick={handleDownloadVideo}
-              className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-6 bg-[#00FF87] text-[#080B0F] font-bold uppercase tracking-[0.22em] rounded-md flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,255,135,0.4)] overflow-hidden text-[10px]"
+              className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-5 bg-[#00FF87] text-[#080B0F] font-bold uppercase tracking-[0.22em] rounded-xl flex items-center justify-center gap-2 transition-all duration-300 hover:brightness-110 hover:shadow-[0_0_20px_rgba(0,255,135,0.4)] overflow-hidden text-[10px]"
             >
-              {/* Scanline Overlay */}
               <div className="absolute inset-0 hud-noise-overlay group-hover:opacity-30 transition-opacity" />
-
-              {/* Inner Glow (Simulated) */}
               <div className="absolute inset-0 shadow-[inset_0_0_10px_rgba(255,255,255,0.4)] pointer-events-none" />
-
               <div className="relative flex items-center gap-2 justify-center">
                 <Download className="w-3.5 h-3.5 stroke-[2.5px]" />
-                <span className="mt-0.5">Download Highlight Reel</span>
+                <span className="mt-0.5">Download 16:9 Reel</span>
               </div>
             </button>
-
-            {/* Soft Outer Glow Pulse (Visible on hover) */}
-            <div className="absolute inset-0 rounded-md animate-glow-pulse-hud opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10" />
+            <div className="absolute inset-0 rounded-xl animate-glow-pulse-hud opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none -z-10" />
           </motion.div>
 
           <button
             onClick={handleCopyLink}
-            className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-6 bg-[#111820] text-white border border-white/12 hover:border-[#00FF87] hover:text-[#00FF87] font-bold uppercase tracking-[0.22em] rounded-md transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden text-[10px]"
+            className="group relative w-full sm:w-auto h-9 sm:h-10 px-4 sm:px-5 bg-[#111820] text-white border border-white/12 hover:border-[#00FF87] hover:text-[#00FF87] font-bold uppercase tracking-[0.22em] rounded-xl transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden text-[10px]"
           >
-            {/* Scan Sweep Animation */}
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-[#00FF87]/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out" />
-
             <div className="relative flex items-center gap-2 justify-center">
               <Share2 className="w-3.5 h-3.5 transition-colors" />
               <span className="mt-0.5">Share Intel</span>
@@ -688,13 +691,16 @@ const ResultsPage = () => {
           </button>
         </motion.div>
 
+        {/* 📱 Viral Social Media Clips & Moments Showcase */}
+        <ClipsGallery events={events} onOpenStudio={openReelStudio} videoUrl={data?.video_url} onSeek={handleSeek} />
+
         {/* AI Journal - Expansive Layout */}
         <motion.div
           variants={{
             hidden: { opacity: 0, y: 50 },
             visible: { opacity: 1, y: 0, transition: { duration: 1, delay: 0.6 } }
           }}
-          className="p-4 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[16px] sm:rounded-[36px] relative group text-left w-full max-w-[850px] mx-auto mt-4 sm:mt-6 shadow-2xl"
+          className="p-4 sm:p-12 md:p-16 bg-[#080B12]/80 backdrop-blur-3xl border border-white/5 rounded-[16px] sm:rounded-[36px] relative group text-left w-full max-w-[480px] sm:max-w-[600px] md:max-w-[680px] lg:max-w-[720px] mx-auto mt-4 sm:mt-6 shadow-2xl"
         >
           <div className="absolute top-0 right-1/4 w-[30%] h-1.5 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
           <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_top_left,rgba(0,255,135,0.02),transparent_40%)] pointer-events-none rounded-[24px] sm:rounded-[36px]" />
@@ -734,6 +740,17 @@ const ResultsPage = () => {
         onClose={() => setIsShareModalOpen(false)}
         url={shareUrl}
         videoUrl={data?.video_url}
+      />
+
+      {/* 📱 1-Click Reel Studio Modal */}
+      <ReelStudioModal
+        isOpen={isReelStudioOpen}
+        onClose={() => setIsReelStudioOpen(false)}
+        sessionId={sessionId || ""}
+        shareToken={data?.share_token}
+        videoUrl={data?.video_url}
+        events={events}
+        initialEventId={selectedReelEventId}
       />
 
       {/* Atmospheric Background */}
