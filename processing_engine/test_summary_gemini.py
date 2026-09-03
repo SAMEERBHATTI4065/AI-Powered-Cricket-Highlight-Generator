@@ -44,10 +44,12 @@ def run_test():
         
     print(f"Created offline verified events at {json_path}")
     
-    # 2. Inject Gemini API Key from environment (.env)
-    from dotenv import load_dotenv
-    load_dotenv()
-    # It will automatically be in os.environ, no need to hardcode it here
+    # 2. Inject environment variables (.env)
+    try:
+        from dotenv import load_dotenv
+        load_dotenv()
+    except ImportError:
+        pass
     
     # 3. Trigger summary generation
     print("Executing generate_summary using Gemini API...")

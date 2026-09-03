@@ -99,6 +99,8 @@ class APIConfig:
         self.google_credentials_path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        self.hf_token = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_API_KEY") or os.getenv("HUGGINGFACEHUB_API_TOKEN")
+        self.groq_api_key = os.getenv("GROQ_API_KEY")
         
         if self.google_credentials_path:
             os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = self.google_credentials_path
@@ -112,9 +114,7 @@ class APIConfig:
         elif not os.path.exists(self.google_credentials_path):
             errors.append(f"Google credentials file not found: {self.google_credentials_path}")
         
-        if not self.openai_api_key and not self.gemini_api_key:
-            errors.append("Neither OPENAI_API_KEY nor GEMINI_API_KEY is set in environment")
-        
+        # We now have multi-tier providers (HF Router, Groq, Gemini, OpenAI) and built-in offline narrative synthesis
         return errors
 
 
