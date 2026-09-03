@@ -34,7 +34,11 @@ db.sqlite3
 
 # Environment variables - NEVER commit these!
 .env
-.env.local
+.env.*
+*.env
+*.env.*
+**/.env
+**/.env.*
 
 # Google Cloud credentials - SENSITIVE!
 *.json
