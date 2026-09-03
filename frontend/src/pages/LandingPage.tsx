@@ -378,53 +378,7 @@ const LandingPage = () => {
                 </div>
             </section>
 
-            {/* --- Section 5: Team Section --- */}
-            <section className="py-[80px] container mx-auto px-6">
-                <div className="text-center mb-12 sm:mb-24">
-                    <h2 className="text-xl sm:text-4xl md:text-5xl font-bold mb-2 sm:mb-4 leading-[1.1] tracking-[0.08em]">BUILT BY BELIEVERS.</h2>
-                    <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-primary font-bold block">The team behind CricketAI</span>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    {[
-                        {
-                            name: "Sameer Zaheer Bhatti",
-                            role: "Lead AI Systems Architect & Backend Engineer",
-                            bio: "Conceived the project architecture and integrated core AI modules for the ultimate match experience.",
-                            initials: "SB"
-                        },
-                        {
-                            name: "Muhammad Hanzla",
-                            role: "Senior Frontend Engineer & UI/UX Specialist",
-                            bio: "Architected the user interface and the high-fidelity 'Broadcast Dark' design system.",
-                            initials: "MH"
-                        },
-                        {
-                            name: "Farooq Muaviya",
-                            role: "Full-Stack Integration Engineer (React Specialist)",
-                            bio: "Engineered the high-performance video processing pipeline and backend infrastructure.",
-                            initials: "FM"
-                        }
-                    ].map((member, idx) => (
-                        <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.6, delay: idx * 0.1 }}
-                            whileHover={{ y: -5 }}
-                            className="bg-surface/40 p-4 sm:p-8 rounded-[20px] sm:rounded-3xl border border-white/5 hover:border-primary/50 transition-all group"
-                        >
-                            <div className="w-9 h-9 sm:w-16 sm:h-16 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-xs sm:text-xl mb-2 sm:mb-6 shadow-[0_0_20px_rgba(0,255,135,0.1)] group-hover:shadow-[0_0_30px_rgba(0,255,135,0.3)] transition-all">
-                                {member.initials}
-                            </div>
-                            <h3 className="text-sm sm:text-xl font-bold text-white mb-1 sm:mb-2 tracking-[0.08em]">{member.name}</h3>
-                            <p className="text-primary text-[9px] sm:text-xs font-semibold mb-1.5 sm:mb-3 tracking-[0.02em]">{member.role}</p>
-                            <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm leading-[1.6] tracking-[0.02em]">{member.bio}</p>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
 
             {/* --- Section 6: Final CTA --- */}
             <section className="py-[80px] relative overflow-hidden">
