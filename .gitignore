@@ -92,5 +92,5 @@ backend/test_frame_21.jpg
 backend/media/
 run_local.bat
 
-
-
+# Private Hackathon Recording Guide (Do not push to public repo)
+HACKATHON_VIDEO_SCRIPT_AND_SUBMISSION_GUIDE.md
