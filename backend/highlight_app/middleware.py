@@ -13,3 +13,5 @@ class TokenAuthMiddleware(MiddlewareMixin):
                 request.user = token.user
             except Token.DoesNotExist:
                 request.user = AnonymousUser()
+            except Exception:
+                request.user = AnonymousUser()

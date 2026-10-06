@@ -26,8 +26,11 @@ async function handleFetchResponse(res: Response, defaultError: string) {
     if (contentType && contentType.includes('application/json')) {
         data = await res.json();
     } else {
-        const text = await res.text();
-        throw new Error(`Server error (${res.status}): Non-JSON response received.`);
+        await res.text();
+        if (res.status === 500 || res.status === 502 || res.status === 503 || res.status === 504) {
+            throw new Error(`Database/Server unavailable (${res.status}). If using Supabase, please verify that your project is not paused.`);
+        }
+        throw new Error(`Server error (${res.status}): Unexpected server response.`);
     }
     if (!res.ok) {
         throw new Error(data.error || defaultError);

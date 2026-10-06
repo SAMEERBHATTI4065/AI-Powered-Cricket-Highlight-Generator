@@ -22,11 +22,22 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+from django.db import DatabaseError, OperationalError
+
 from .models import AnalysisSession, EmailVerificationCode
 from rest_framework.authtoken.models import Token
 from .tasks import send_async_email
 
 logger = logging.getLogger(__name__)
+
+
+def _format_error_response(e, context="Operation"):
+    err_str = str(e)
+    if isinstance(e, (OperationalError, DatabaseError)) or "tenant" in err_str.lower() or "connection to server" in err_str.lower():
+        return JsonResponse({
+            'error': 'Database is paused or unreachable. If using Supabase, please verify that your project is active/unpaused in Supabase Dashboard.'
+        }, status=503)
+    return JsonResponse({'error': f"{context} failed: {err_str}"}, status=500)
 
 
 def _user_dict(user):
@@ -51,44 +62,48 @@ def _generate_otp():
 def send_code_view(request):
     """Send a 6-digit verification code to the provided email."""
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-    email = data.get('email', '').strip().lower()
-    if not email:
-        return JsonResponse({'error': 'Email is required.'}, status=400)
+        email = data.get('email', '').strip().lower()
+        if not email:
+            return JsonResponse({'error': 'Email is required.'}, status=400)
 
-    # Check if email already registered
-    if User.objects.filter(email=email).exists():
-        return JsonResponse({'error': 'This email is already registered. Please login instead.'}, status=409)
+        # Check if email already registered
+        if User.objects.filter(email=email).exists():
+            return JsonResponse({'error': 'This email is already registered. Please login instead.'}, status=409)
 
-    # Invalidate any previous unused codes for this email
-    EmailVerificationCode.objects.filter(email=email, is_used=False).update(is_used=True)
+        # Invalidate any previous unused codes for this email
+        EmailVerificationCode.objects.filter(email=email, is_used=False).update(is_used=True)
 
-    # Generate and save new code
-    code = _generate_otp()
-    EmailVerificationCode.objects.create(email=email, code=code)
+        # Generate and save new code
+        code = _generate_otp()
+        EmailVerificationCode.objects.create(email=email, code=code)
 
-    # Send email asynchronously via Celery to prevent HTTP thread blocking/hanging
-    try:
-        send_async_email.delay(
-            subject='🏏 CricketAI — Your Verification Code',
-            message=f'Your CricketAI verification code is: {code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.',
-            recipient_list=[email],
-            fail_silently=False,
-        )
-        logger.info(f"Verification code queued for {email}: {code}")
+        # Send email asynchronously via Celery to prevent HTTP thread blocking/hanging
+        try:
+            send_async_email.delay(
+                subject='🏏 CricketAI — Your Verification Code',
+                message=f'Your CricketAI verification code is: {code}\n\nThis code will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.',
+                recipient_list=[email],
+                fail_silently=False,
+            )
+            logger.info(f"Verification code queued for {email}: {code}")
+        except Exception as e:
+            logger.error(f"Failed to queue verification email to {email}: {e}")
+            # Still return success so the code is usable in dev (console backend)
+            logger.info(f"[DEV] Verification code for {email}: {code}")
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Verification code sent to your email.',
+            'dev_code': code
+        })
     except Exception as e:
-        logger.error(f"Failed to queue verification email to {email}: {e}")
-        # Still return success so the code is usable in dev (console backend)
-        logger.info(f"[DEV] Verification code for {email}: {code}")
-
-    return JsonResponse({
-        'success': True,
-        'message': 'Verification code sent to your email.',
-        'dev_code': code
-    })
+        logger.error(f"Unhandled exception in send_code_view: {e}", exc_info=True)
+        return _format_error_response(e, "Send verification code")
 
 
 @csrf_exempt
@@ -96,33 +111,37 @@ def send_code_view(request):
 def verify_code_view(request):
     """Verify the 6-digit code for a given email."""
     try:
-        data = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        try:
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-    email = data.get('email', '').strip().lower()
-    code = data.get('code', '').strip()
+        email = data.get('email', '').strip().lower()
+        code = data.get('code', '').strip()
 
-    if not email or not code:
-        return JsonResponse({'error': 'Email and code are required.'}, status=400)
+        if not email or not code:
+            return JsonResponse({'error': 'Email and code are required.'}, status=400)
 
-    # Find matching code
-    verification = EmailVerificationCode.objects.filter(
-        email=email, code=code, is_used=False
-    ).order_by('-created_at').first()
+        # Find matching code
+        verification = EmailVerificationCode.objects.filter(
+            email=email, code=code, is_used=False
+        ).order_by('-created_at').first()
 
-    if not verification:
-        return JsonResponse({'error': 'Invalid verification code.'}, status=400)
+        if not verification:
+            return JsonResponse({'error': 'Invalid verification code.'}, status=400)
 
-    if verification.is_expired():
-        return JsonResponse({'error': 'Verification code has expired. Please request a new one.'}, status=400)
+        if verification.is_expired():
+            return JsonResponse({'error': 'Verification code has expired. Please request a new one.'}, status=400)
 
-    # Mark as used
-    verification.is_used = True
-    verification.save()
+        # Mark as used
+        verification.is_used = True
+        verification.save()
 
-    logger.info(f"Email verified: {email}")
-    return JsonResponse({'success': True, 'verified': True, 'email': email})
+        logger.info(f"Email verified: {email}")
+        return JsonResponse({'success': True, 'verified': True, 'email': email})
+    except Exception as e:
+        logger.error(f"Unhandled exception in verify_code_view: {e}", exc_info=True)
+        return _format_error_response(e, "Verify code")
 
 
 @csrf_exempt
@@ -178,7 +197,7 @@ def register_view(request):
         return JsonResponse({'success': True, 'token': token_obj.key, 'user': _user_dict(user)}, status=201)
     except Exception as e:
         logger.error(f"Unhandled exception in register_view: {e}", exc_info=True)
-        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)
+        return _format_error_response(e, "Registration")
 
 
 @csrf_exempt
@@ -220,7 +239,7 @@ def login_view(request):
         return JsonResponse({'success': True, 'token': token.key, 'user': _user_dict(user)})
     except Exception as e:
         logger.error(f"Unhandled exception in login_view: {e}", exc_info=True)
-        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)
+        return _format_error_response(e, "Login")
 
 
 @csrf_exempt
@@ -233,15 +252,19 @@ def logout_view(request):
 
 def me_view(request):
     """Return the currently logged-in user or anonymous info."""
-    if request.user.is_authenticated:
-        return JsonResponse({'authenticated': True, 'user': _user_dict(request.user)})
-    return JsonResponse({'authenticated': False, 'user': None})
+    try:
+        if request.user.is_authenticated:
+            return JsonResponse({'authenticated': True, 'user': _user_dict(request.user)})
+        return JsonResponse({'authenticated': False, 'user': None})
+    except Exception as e:
+        return _format_error_response(e, "Check authentication")
 
 
 def history_view(request):
     """Return all highlight sessions for the logged-in user."""
-    if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Login required.'}, status=401)
+    try:
+        if not request.user.is_authenticated:
+            return JsonResponse({'error': 'Login required.'}, status=401)
 
     sessions = (
         AnalysisSession.objects
@@ -289,7 +312,10 @@ def history_view(request):
             }
         })
 
-    return JsonResponse({'sessions': results, 'count': len(results)})
+        return JsonResponse({'sessions': results, 'count': len(results)})
+    except Exception as e:
+        logger.error(f"Unhandled exception in history_view: {e}", exc_info=True)
+        return _format_error_response(e, "Fetch history")
 
 
 def _verify_google_token(token):
@@ -390,4 +416,4 @@ def google_login_view(request):
         return JsonResponse({'success': True, 'token': token_obj.key, 'user': _user_dict(user)})
     except Exception as e:
         logger.error(f"Unhandled exception in google_login_view: {e}", exc_info=True)
-        return JsonResponse({'error': f"Internal server error: {str(e)}"}, status=500)
+        return _format_error_response(e, "Google login")

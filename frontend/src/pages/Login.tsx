@@ -13,7 +13,7 @@ export default function Login() {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '440023432666-3dsf0j0urad0efl20935t7bhriaam53n.apps.googleusercontent.com';
+    const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '339766110479-e925bj6561fbmr8qmpgc74i5fmuqphj8.apps.googleusercontent.com';
 
     useEffect(() => {
         const { google } = window as any;
