@@ -74,14 +74,36 @@ TEMPLATES = [
 WSGI_APPLICATION = "cricket_highlights.wsgi.application"
 
 
-# Database
-# Using SQLite for sessions only (no models needed)
+# Session configuration: Use signed cookies so sessions never depend on DB availability
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
 
-DATABASES = {
-    "default": dj_database_url.config(
-        default=os.environ.get("DATABASE_URL", f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
-    )
-}
+# Database configuration with resilient connection check and automatic fallback
+db_url = os.environ.get("DATABASE_URL")
+if db_url and db_url.startswith("postgres"):
+    import psycopg2
+    try:
+        conn = psycopg2.connect(db_url, connect_timeout=3)
+        conn.close()
+        DATABASES = {
+            "default": dj_database_url.config(default=db_url)
+        }
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(
+            f"Configured DATABASE_URL is unreachable ({e}). Gracefully falling back to local SQLite database."
+        )
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+            }
+        }
+else:
+    DATABASES = {
+        "default": dj_database_url.config(
+            default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}"
+        )
+    }
 
 
 # Password validation

@@ -262,55 +262,55 @@ def me_view(request):
 
 def history_view(request):
     """Return all highlight sessions for the logged-in user."""
+    if not request.user.is_authenticated:
+        return JsonResponse({'error': 'Login required.'}, status=401)
+
     try:
-        if not request.user.is_authenticated:
-            return JsonResponse({'error': 'Login required.'}, status=401)
-
-    sessions = (
-        AnalysisSession.objects
-        .filter(user=request.user)
-        .order_by('-created_at')
-        .values(
-            'session_id', 'video_title', 'summary_text',
-            'video_path', 'share_token', 'created_at', 'events_json'
+        sessions = (
+            AnalysisSession.objects
+            .filter(user=request.user)
+            .order_by('-created_at')
+            .values(
+                'session_id', 'video_title', 'summary_text',
+                'video_path', 'share_token', 'created_at', 'events_json'
+            )
         )
-    )
 
-    results = []
-    for s in sessions:
-        events = s.get('events_json') or []
-        
-        # Calculate stats dynamically from events_json
-        wickets = 0
-        sixes = 0
-        fours = 0
-        for event in events:
-            if isinstance(event, dict):
-                etype = str(event.get('event_type', '')).upper()
-                if etype == 'WICKET':
-                    wickets += 1
-                elif etype == 'SIX':
-                    sixes += 1
-                elif etype == 'FOUR':
-                    fours += 1
-                    
-        total_boundaries = sixes + fours
+        results = []
+        for s in sessions:
+            events = s.get('events_json') or []
+            
+            # Calculate stats dynamically from events_json
+            wickets = 0
+            sixes = 0
+            fours = 0
+            for event in events:
+                if isinstance(event, dict):
+                    etype = str(event.get('event_type', '')).upper()
+                    if etype == 'WICKET':
+                        wickets += 1
+                    elif etype == 'SIX':
+                        sixes += 1
+                    elif etype == 'FOUR':
+                        fours += 1
+                        
+            total_boundaries = sixes + fours
 
-        video_url = f"/api/results/{s['session_id']}/stream/" if s['video_path'] else None
-        results.append({
-            'session_id': s['session_id'],
-            'video_title': s['video_title'] or 'Cricket Match',
-            'summary_preview': (s['summary_text'] or '')[:200],
-            'video_url': video_url,
-            'share_token': s['share_token'],
-            'created_at': s['created_at'].isoformat() if s['created_at'] else None,
-            'stats': {
-                'wickets': wickets,
-                'sixes': sixes,
-                'fours': fours,
-                'boundaries': total_boundaries
-            }
-        })
+            video_url = f"/api/results/{s['session_id']}/stream/" if s['video_path'] else None
+            results.append({
+                'session_id': s['session_id'],
+                'video_title': s['video_title'] or 'Cricket Match',
+                'summary_preview': (s['summary_text'] or '')[:200],
+                'video_url': video_url,
+                'share_token': s['share_token'],
+                'created_at': s['created_at'].isoformat() if s['created_at'] else None,
+                'stats': {
+                    'wickets': wickets,
+                    'sixes': sixes,
+                    'fours': fours,
+                    'boundaries': total_boundaries
+                }
+            })
 
         return JsonResponse({'sessions': results, 'count': len(results)})
     except Exception as e:
